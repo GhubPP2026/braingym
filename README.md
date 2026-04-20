@@ -3,7 +3,6 @@
 A fully offline-capable, single-page web application for kids aged 7–16 to develop focus, attention, creativity, cognitive skills, problem solving, and time management.
 
 ## 🌐 Live App
-👉 **[Play BrainGym](https://GhubPP2026.github.io/braingym)**
 
 ## ✨ Features
 
