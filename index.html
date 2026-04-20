@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainGym — Kids Learning App</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0e17;
+  --surface: #1a1929;
+  --surface2: #22203a;
+  --accent1: #ff6b6b;
+  --accent2: #ffd166;
+  --accent3: #06d6a0;
+  --accent4: #a29bfe;
+  --accent5: #fd79a8;
+  --accent6: #74b9ff;
+  --text: #fffffe;
+  --text2: #b0aed0;
+  --radius: 18px;
+  --card-radius: 22px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── STARS BG ── */
+.stars-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, #0a1a3e 0%, transparent 50%),
+              var(--bg);
+}
+.stars-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 85%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(2px 2px at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(2px 2px at 65% 45%, rgba(255,255,255,0.2) 0%, transparent 100%);
+}
+
+/* ── APP SHELL ── */
+#app { position: relative; z-index: 1; min-height: 100vh; }
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; padding: 0; }
+.screen.active { display: block; }
+
+/* ══════════════════════════════
+   HOME SCREEN
+══════════════════════════════ */
+#home {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+#home.active { display: flex; }
+
+.home-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  animation: fadeDown 0.6s ease;
+}
+.home-logo {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  background: linear-gradient(135deg, var(--accent2), var(--accent1), var(--accent4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+  filter: drop-shadow(0 0 30px rgba(255,107,107,0.4));
+}
+.home-tagline {
+  font-size: 1rem;
+  color: var(--text2);
+  margin-top: 0.4rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Player bar */
+.player-bar {
+  width: 100%;
+  max-width: 680px;
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.07);
+  animation: fadeUp 0.5s ease 0.1s both;
+}
+.player-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  border: 3px solid var(--accent3);
+}
+.player-info { flex: 1; }
+.player-name { font-size: 1rem; font-weight: 800; }
+.player-level { font-size: 0.78rem; color: var(--text2); }
+.xp-bar-wrap { margin-top: 4px; background: rgba(255,255,255,0.08); border-radius: 10px; height: 7px; }
+.xp-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent3), var(--accent4)); transition: width 0.6s ease; }
+.player-stats { display: flex; gap: 1rem; text-align: center; }
+.stat-item .val { font-size: 1.2rem; font-weight: 900; color: var(--accent2); }
+.stat-item .lbl { font-size: 0.7rem; color: var(--text2); }
+
+/* Filters */
+.filter-section {
+  width: 100%; max-width: 680px;
+  animation: fadeUp 0.5s ease 0.2s both;
+}
+.filter-label { font-size: 0.72rem; font-weight: 700; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+.filter-chips {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem;
+}
+.chip {
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: var(--surface2);
+  color: var(--text2);
+  transition: all 0.2s;
+  font-family: 'Nunito', sans-serif;
+}
+.chip:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+.chip.active { color: var(--bg); border-color: transparent; }
+.chip[data-skill="all"].active { background: linear-gradient(135deg, var(--accent1), var(--accent4)); }
+.chip[data-skill="focus"].active { background: var(--accent6); }
+.chip[data-skill="creative"].active { background: var(--accent5); }
+.chip[data-skill="problem"].active { background: var(--accent3); }
+.chip[data-skill="cognitive"].active { background: var(--accent2); }
+.chip[data-skill="social"].active { background: var(--accent1); }
+.chip[data-skill="time"].active { background: var(--accent4); }
+.chip[data-age="all"].active { background: linear-gradient(135deg, var(--accent1), var(--accent4)); }
+.chip[data-age="elem"].active { background: var(--accent3); }
+.chip[data-age="middle"].active { background: var(--accent2); }
+.chip[data-age="high"].active { background: var(--accent4); }
+.chip[data-age="playable"].active { background: linear-gradient(135deg, var(--accent2), var(--accent3)); color: #0f0e17; }
+
+/* Cards grid */
+.cards-meta {
+  width: 100%; max-width: 680px;
+  font-size: 0.78rem; color: var(--text2);
+  margin-bottom: 0.75rem;
+  animation: fadeUp 0.5s ease 0.3s both;
+}
+.cards-grid {
+  width: 100%; max-width: 680px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.technique-card {
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  border: 1px solid rgba(255,255,255,0.07);
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+.technique-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.18); }
+.technique-card.time-card { border-left: 3px solid var(--accent3); }
+.card-top { display: flex; align-items: flex-start; gap: 12px; }
+.card-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.card-body { flex: 1; min-width: 0; }
+.card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.card-title { font-size: 0.95rem; font-weight: 800; }
+.new-badge {
+  font-size: 0.65rem; font-weight: 800;
+  padding: 2px 7px; border-radius: 30px;
+  background: var(--accent3); color: #0f0e17;
+}
+.playable-badge {
+  font-size: 0.65rem; font-weight: 800;
+  padding: 2px 7px; border-radius: 30px;
+  background: var(--accent2); color: #0f0e17;
+  cursor: pointer;
+}
+.card-sub { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; align-items: center; }
+.tag {
+  font-size: 0.68rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+.tag-focus { background: rgba(116,185,255,0.15); color: var(--accent6); }
+.tag-creative { background: rgba(253,121,168,0.15); color: var(--accent5); }
+.tag-problem { background: rgba(6,214,160,0.15); color: var(--accent3); }
+.tag-cognitive { background: rgba(255,209,102,0.15); color: var(--accent2); }
+.tag-social { background: rgba(255,107,107,0.15); color: var(--accent1); }
+.tag-time { background: rgba(162,155,254,0.15); color: var(--accent4); }
+.age-tag { background: rgba(255,255,255,0.06); color: var(--text2); margin-left: auto; }
+.completed-tick {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--accent3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  color: #0f0e17;
+  font-weight: 900;
+}
+.card-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.82rem;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.play-btn {
+  margin-top: 10px;
+  padding: 8px 18px;
+  border-radius: 30px;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent1), var(--accent4));
+  color: white;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.play-btn:hover { opacity: 0.85; transform: scale(1.03); }
+
+/* Progress screen link */
+.progress-link-bar {
+  width: 100%; max-width: 680px;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  animation: fadeUp 0.5s ease 0.4s both;
+}
+.progress-link-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--card-radius);
+  border: 1.5px dashed rgba(162,155,254,0.4);
+  background: rgba(162,155,254,0.05);
+  color: var(--accent4);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 0.02em;
+}
+.progress-link-btn:hover { background: rgba(162,155,254,0.1); }
+
+/* ══════════════════════════════
+   GAME SCREENS
+══════════════════════════════ */
+.game-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1.5rem 1rem 2rem;
+}
+.game-screen.active { display: flex; }
+
+.game-header {
+  width: 100%; max-width: 560px;
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.back-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+  font-family: 'Nunito', sans-serif;
+}
+.back-btn:hover { background: var(--surface2); }
+.game-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; }
+.game-xp-badge {
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255,209,102,0.15);
+  color: var(--accent2);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+/* STROOP GAME */
+.stroop-word {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(3rem, 12vw, 5rem);
+  text-align: center;
+  padding: 2rem 1rem;
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  width: 100%; max-width: 460px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  min-height: 140px;
+  display: flex; align-items: center; justify-content: center;
+  letter-spacing: 2px;
+}
+.stroop-instruction {
+  font-size: 0.82rem;
+  color: var(--text2);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+.stroop-btns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%; max-width: 460px;
+}
+.stroop-btn {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.stroop-btn:hover { background: var(--surface2); border-color: rgba(255,255,255,0.25); }
+.stroop-btn.correct { background: rgba(6,214,160,0.2) !important; border-color: var(--accent3) !important; color: var(--accent3); }
+.stroop-btn.wrong { background: rgba(255,107,107,0.2) !important; border-color: var(--accent1) !important; color: var(--accent1); }
+.game-stats-row {
+  display: flex; gap: 1rem;
+  width: 100%; max-width: 460px;
+  margin-bottom: 1rem;
+}
+.game-stat {
+  flex: 1; background: var(--surface);
+  border-radius: var(--radius); padding: 10px;
+  text-align: center;
+}
+.game-stat .gval { font-size: 1.4rem; font-weight: 900; }
+.game-stat .glbl { font-size: 0.7rem; color: var(--text2); }
+.progress-strip {
+  width: 100%; max-width: 460px;
+  height: 8px; background: rgba(255,255,255,0.08);
+  border-radius: 4px; margin-bottom: 1rem; overflow: hidden;
+}
+.progress-strip-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent4), var(--accent1));
+  transition: width 0.3s ease;
+}
+.game-feedback {
+  font-size: 1rem; font-weight: 800;
+  min-height: 28px; text-align: center;
+  margin-bottom: 0.5rem;
+}
+.mode-row {
+  display: flex; gap: 8px;
+  width: 100%; max-width: 460px;
+  margin-bottom: 1rem;
+}
+.mode-chip {
+  flex: 1; padding: 8px;
+  border-radius: var(--radius);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 0.8rem;
+  cursor: pointer; text-align: center;
+}
+.mode-chip.active { border-color: var(--accent4); color: var(--accent4); background: rgba(162,155,254,0.1); }
+
+/* POMODORO */
+.pomo-ring-wrap {
+  position: relative;
+  width: 220px; height: 220px;
+  margin: 0 auto 1.5rem;
+}
+.pomo-ring-wrap svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+.pomo-ring-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 12; }
+.pomo-ring-fill { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.pomo-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.pomo-time { font-family: 'Fredoka One', cursive; font-size: 3rem; }
+.pomo-label { font-size: 0.78rem; color: var(--text2); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.pomo-controls { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+.pomo-btn {
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: none;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.pomo-btn:hover { opacity: 0.85; transform: scale(1.04); }
+.pomo-btn.start { background: linear-gradient(135deg, var(--accent3), var(--accent6)); color: #0f0e17; }
+.pomo-btn.reset { background: var(--surface2); color: var(--text); }
+.pomo-cycles {
+  display: flex; gap: 8px; margin-bottom: 1rem;
+}
+.cycle-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  transition: background 0.3s;
+}
+.cycle-dot.done { background: var(--accent3); }
+.pomo-settings {
+  width: 100%; max-width: 400px;
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.pomo-setting-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 0.75rem;
+}
+.pomo-setting-row:last-child { margin-bottom: 0; }
+.pomo-setting-row label { font-size: 0.82rem; color: var(--text2); font-weight: 700; flex: 1; }
+.pomo-setting-row input[type=range] { flex: 1; }
+.pomo-setting-row span { font-size: 0.82rem; font-weight: 800; min-width: 36px; text-align: right; }
+
+/* TASK SORTER */
+.task-sorter-wrap { width: 100%; max-width: 480px; }
+.task-sorter-prompt {
+  font-size: 0.85rem; color: var(--text2); text-align: center;
+  margin-bottom: 1.25rem; line-height: 1.6;
+}
+.task-input-row {
+  display: flex; gap: 8px; margin-bottom: 1rem;
+}
+.task-input {
+  flex: 1; padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+}
+.task-input:focus { outline: none; border-color: var(--accent4); }
+.task-add-btn {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent4);
+  color: #0f0e17;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.eisenhower-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.quadrant {
+  border-radius: var(--card-radius);
+  padding: 12px;
+  min-height: 120px;
+  border: 1.5px dashed rgba(255,255,255,0.1);
+  transition: border-color 0.2s;
+}
+.quadrant.drag-over { border-color: rgba(255,255,255,0.4); }
+.q-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.q1 { background: rgba(255,107,107,0.08); }
+.q1 .q-label { color: var(--accent1); }
+.q2 { background: rgba(255,209,102,0.08); }
+.q2 .q-label { color: var(--accent2); }
+.q3 { background: rgba(116,185,255,0.08); }
+.q3 .q-label { color: var(--accent6); }
+.q4 { background: rgba(255,255,255,0.04); }
+.q4 .q-label { color: var(--text2); }
+.task-chip-drag {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  cursor: grab;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 6px;
+  user-select: none;
+}
+.task-chip-drag:active { cursor: grabbing; }
+.task-del { margin-left: auto; cursor: pointer; color: var(--text2); font-size: 0.7rem; }
+.unsorted-pool {
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 12px;
+  margin-bottom: 10px;
+  min-height: 60px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.pool-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text2); margin-bottom: 8px; }
+
+/* MEMORY PALACE */
+.palace-wrap { width: 100%; max-width: 480px; }
+.palace-room-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+.palace-room {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  border: 1.5px solid rgba(255,255,255,0.07);
+  transition: all 0.2s;
+}
+.palace-room:hover { border-color: var(--accent4); }
+.palace-room.has-item { border-color: var(--accent3); background: rgba(6,214,160,0.08); }
+.room-emoji { font-size: 1.5rem; }
+.room-name { font-size: 0.7rem; color: var(--text2); margin-top: 4px; }
+.room-item { font-size: 0.72rem; color: var(--accent3); margin-top: 3px; font-weight: 700; }
+.palace-item-input {
+  display: flex; gap: 8px; margin-bottom: 1rem;
+}
+.palace-recall-area {
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 1rem;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.palace-recall-title { font-size: 0.82rem; font-weight: 800; margin-bottom: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+.recall-input {
+  width: 100%; padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+.recall-input:focus { outline: none; border-color: var(--accent4); }
+.recall-result { font-size: 0.8rem; margin-top: 6px; font-weight: 700; }
+
+/* PROGRESS SCREEN */
+#progress {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem 2rem;
+}
+#progress.active { display: flex; }
+
+.progress-header { width: 100%; max-width: 560px; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.prog-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; }
+
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  width: 100%; max-width: 560px;
+  margin-bottom: 1.5rem;
+}
+.achievement {
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.achievement.unlocked { border-color: var(--accent2); background: rgba(255,209,102,0.06); }
+.ach-icon { font-size: 1.8rem; margin-bottom: 6px; filter: grayscale(1); }
+.achievement.unlocked .ach-icon { filter: grayscale(0); }
+.ach-name { font-size: 0.78rem; font-weight: 800; }
+.ach-desc { font-size: 0.68rem; color: var(--text2); margin-top: 3px; }
+
+.skill-progress-section {
+  width: 100%; max-width: 560px;
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 1.25rem;
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 1.5rem;
+}
+.skill-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.skill-row:last-child { margin-bottom: 0; }
+.skill-icon { font-size: 1rem; width: 24px; text-align: center; }
+.skill-name { font-size: 0.82rem; font-weight: 700; width: 100px; flex-shrink: 0; }
+.skill-bar-wrap { flex: 1; background: rgba(255,255,255,0.07); border-radius: 10px; height: 9px; }
+.skill-bar-fill { height: 100%; border-radius: 10px; transition: width 0.8s ease; }
+.skill-pct { font-size: 0.72rem; font-weight: 800; min-width: 32px; text-align: right; }
+
+.reset-btn {
+  padding: 10px 24px;
+  border-radius: 30px;
+  border: 1.5px solid rgba(255,107,107,0.3);
+  background: rgba(255,107,107,0.08);
+  color: var(--accent1);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800; font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+.reset-btn:hover { background: rgba(255,107,107,0.15); }
+
+/* RESULT OVERLAY */
+.result-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(15,14,23,0.9);
+  align-items: center; justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 2rem;
+}
+.result-overlay.show { display: flex; }
+.result-emoji { font-size: 4rem; margin-bottom: 1rem; animation: bounce 0.6s ease; }
+.result-title { font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 0.5rem; }
+.result-sub { color: var(--text2); margin-bottom: 0.5rem; font-size: 0.9rem; }
+.result-xp { color: var(--accent2); font-weight: 900; font-size: 1.1rem; margin-bottom: 1.5rem; }
+.result-btns { display: flex; gap: 12px; }
+.result-btn {
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: none;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.result-btn.primary { background: linear-gradient(135deg, var(--accent1), var(--accent4)); color: white; }
+.result-btn.secondary { background: var(--surface2); color: var(--text); }
+
+/* NAV BAR */
+.nav-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: var(--surface);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  padding: 0.6rem 0 0.8rem;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  cursor: pointer; border: none; background: none;
+  color: var(--text2); font-family: 'Nunito', sans-serif;
+  font-size: 0.65rem; font-weight: 700;
+  transition: color 0.2s; padding: 4px;
+}
+.nav-item.active { color: var(--accent4); }
+.nav-icon { font-size: 1.3rem; }
+
+/* ONBOARDING */
+#onboarding {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+#onboarding.active { display: flex; }
+.onboard-logo {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.5rem,10vw,4rem);
+  background: linear-gradient(135deg, var(--accent2), var(--accent1), var(--accent4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.onboard-tagline { color: var(--text2); margin-bottom: 2rem; font-weight: 600; }
+.onboard-card {
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 1.5rem;
+  width: 100%; max-width: 400px;
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 1rem;
+}
+.onboard-label { font-size: 0.8rem; font-weight: 700; color: var(--text2); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.onboard-input {
+  width: 100%; padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: var(--surface2);
+  color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  margin-bottom: 1rem; text-align: center;
+}
+.onboard-input:focus { outline: none; border-color: var(--accent4); }
+.avatar-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+.avatar-opt {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: var(--surface2); border: 2px solid transparent;
+  font-size: 1.5rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.2s;
+}
+.avatar-opt.selected { border-color: var(--accent3); }
+.age-group-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.age-opt {
+  padding: 8px 16px; border-radius: 20px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: var(--surface2); color: var(--text2);
+  font-family: 'Nunito', sans-serif; font-weight: 700;
+  font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.age-opt.selected { border-color: var(--accent3); color: var(--accent3); background: rgba(6,214,160,0.1); }
+.start-journey-btn {
+  width: 100%; max-width: 400px;
+  padding: 15px;
+  border-radius: 30px; border: none;
+  background: linear-gradient(135deg, var(--accent1), var(--accent4));
+  color: white; font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem; cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.start-journey-btn:hover { opacity: 0.9; transform: scale(1.02); }
+
+/* BREATHING GAME */
+.breath-tabs { display: flex; gap: 8px; width: 100%; max-width: 480px; margin-bottom: 1.5rem; }
+.breath-tab {
+  flex: 1; padding: 10px 6px; border-radius: var(--radius);
+  border: 1.5px solid rgba(255,255,255,0.1); background: var(--surface2);
+  color: var(--text2); font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 0.72rem; cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.breath-tab.active { border-color: var(--accent4); color: var(--accent4); background: rgba(162,155,254,0.1); }
+.breath-visual-wrap {
+  position: relative; width: 260px; height: 260px; margin: 0 auto 1rem;
+}
+.breath-circle-outer {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.06);
+}
+.breath-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  transition: width 0.8s ease, height 0.8s ease, background 0.8s ease;
+}
+.breath-center-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 2;
+}
+.breath-phase {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+}
+.breath-timer {
+  font-size: 2.8rem;
+  font-family: 'Fredoka One', cursive;
+  margin-top: 2px;
+}
+.breath-instruction {
+  font-size: 0.82rem; color: var(--text2); text-align: center;
+  max-width: 420px; margin: 0 auto 1rem; line-height: 1.6; font-weight: 600;
+}
+.breath-controls { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+.breath-btn {
+  padding: 12px 24px; border-radius: 30px; border: none;
+  font-family: 'Fredoka One', cursive; font-size: 1rem; cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.breath-btn:hover { opacity: 0.85; transform: scale(1.04); }
+.breath-btn.start-breath { background: linear-gradient(135deg, var(--accent4), var(--accent6)); color: #0f0e17; }
+.breath-btn.stop-breath { background: var(--surface2); color: var(--text); }
+
+.breath-cycle-count {
+  font-size: 0.82rem; color: var(--text2); text-align: center; margin-bottom: 1.5rem; font-weight: 700;
+}
+.nostril-visual {
+  width: 100%; max-width: 200px; margin: 0 auto 0.5rem;
+  display: flex; justify-content: center; align-items: center; gap: 12px;
+}
+.nostril-side {
+  width: 50px; height: 70px;
+  border-radius: 0 0 25px 25px;
+  border: 2px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 800; color: var(--text2);
+  transition: all 0.5s;
+}
+.nostril-side.active-nostril {
+  border-color: var(--accent4);
+  background: rgba(162,155,254,0.15);
+  color: var(--accent4);
+}
+.nostril-side.closed-nostril {
+  border-color: var(--accent1);
+  background: rgba(255,107,107,0.08);
+  color: var(--accent1);
+}
+.nose-bridge {
+  font-size: 2rem; color: var(--text2);
+}
+.alpha-controls {
+  width: 100%; max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: 1.25rem;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.alpha-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 0.75rem;
+}
+.alpha-row:last-child { margin-bottom: 0; }
+.alpha-row label { font-size: 0.82rem; color: var(--text2); font-weight: 700; flex: 1; }
+.alpha-row input[type=range] { flex: 1; }
+.alpha-row span { font-size: 0.82rem; font-weight: 800; min-width: 36px; text-align: right; }
+.alpha-wave-vis {
+  width: 100%; max-width: 420px; height: 80px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.humming-indicator {
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem; color: var(--text2); text-align: center; font-weight: 700;
+  min-height: 20px;
+}
+@keyframes breathPulse {
+  0%,100% { box-shadow: 0 0 20px rgba(162,155,254,0.2); }
+  50% { box-shadow: 0 0 50px rgba(162,155,254,0.5); }
+}
+
+/* ANIMATIONS */
+@keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+@keyframes pop { 0%{transform:scale(0.8);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+/* offline badge */
+.offline-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.7rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+  background: rgba(6,214,160,0.12); color: var(--accent3);
+  border: 1px solid rgba(6,214,160,0.25);
+  margin-top: 6px;
+}
+.offline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent3); }
+
+/* body padding for nav */
+body { padding-bottom: 80px; }
+</style>
+</head>
+<body>
+<div class="stars-bg"></div>
+<div id="app">
+
+<!-- ══ ONBOARDING ══ -->
+<div id="onboarding" class="screen active">
+  <div class="onboard-logo">🧠 BrainGym</div>
+  <p class="onboard-tagline">Level up your brain every day</p>
+  <div class="offline-badge"><div class="offline-dot"></div>Works offline</div>
+  <br>
+  <div class="onboard-card">
+    <div class="onboard-label">Your name</div>
+    <input class="onboard-input" id="name-input" placeholder="e.g. Alex" maxlength="20">
+    <div class="onboard-label">Pick your avatar</div>
+    <div class="avatar-row" id="avatar-row">
+      <div class="avatar-opt selected" data-av="🦁">🦁</div>
+      <div class="avatar-opt" data-av="🐯">🐯</div>
+      <div class="avatar-opt" data-av="🦊">🦊</div>
+      <div class="avatar-opt" data-av="🐼">🐼</div>
+      <div class="avatar-opt" data-av="🦋">🦋</div>
+      <div class="avatar-opt" data-av="🐉">🐉</div>
+      <div class="avatar-opt" data-av="🦄">🦄</div>
+      <div class="avatar-opt" data-av="🐸">🐸</div>
+    </div>
+    <div class="onboard-label" style="margin-top:1rem">Age group</div>
+    <div class="age-group-row">
+      <div class="age-opt" data-age="elem">Elementary (7–9)</div>
+      <div class="age-opt" data-age="middle">Middle (10–12)</div>
+      <div class="age-opt" data-age="high">High school (13–16)</div>
+    </div>
+  </div>
+  <button class="start-journey-btn" onclick="startJourney()">Start my journey ✨</button>
+</div>
+
+<!-- ══ HOME ══ -->
+<div id="home" class="screen">
+  <div class="home-header">
+    <div class="home-logo">🧠 BrainGym</div>
+    <div class="home-tagline">Train smarter every day</div>
+    <div class="offline-badge"><div class="offline-dot"></div>Offline ready</div>
+  </div>
+
+  <div class="player-bar" id="player-bar">
+    <div class="player-avatar" id="player-avatar">🦁</div>
+    <div class="player-info">
+      <div class="player-name" id="player-name-disp">Player</div>
+      <div class="player-level" id="player-level-disp">Level 1 — Brain Beginner</div>
+      <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="player-stats">
+      <div class="stat-item"><div class="val" id="stat-xp">0</div><div class="lbl">XP</div></div>
+      <div class="stat-item"><div class="val" id="stat-streak">0</div><div class="lbl">Streak</div></div>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-label">Skill area</div>
+    <div class="filter-chips" id="skill-chips">
+      <div class="chip active" data-skill="all">All techniques</div>
+      <div class="chip" data-skill="focus">Focus & attention</div>
+      <div class="chip" data-skill="creative">Creativity</div>
+      <div class="chip" data-skill="problem">Problem solving</div>
+      <div class="chip" data-skill="cognitive">Cognitive</div>
+      <div class="chip" data-skill="social">Social & emotional</div>
+      <div class="chip" data-skill="time">Time management</div>
+    </div>
+    <div class="filter-label">Age group</div>
+    <div class="filter-chips" id="age-chips">
+      <div class="chip active" data-age="all">All ages</div>
+      <div class="chip" data-age="elem">Elementary (7–9)</div>
+      <div class="chip" data-age="middle">Middle school (10–12)</div>
+      <div class="chip" data-age="high">High school (13–16)</div>
+      <div class="chip" data-age="playable">▶ Playable only</div>
+    </div>
+  </div>
+
+  <div class="cards-meta" id="cards-meta">Showing 28 of 28 techniques</div>
+  <div class="cards-grid" id="cards-grid"></div>
+  <div class="progress-link-bar">
+    <button class="progress-link-btn" onclick="showScreen('progress')">📊 View my progress & achievements →</button>
+  </div>
+</div>
+
+<!-- ══ STROOP GAME ══ -->
+<div id="stroop-game" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <div class="game-title" style="color:var(--accent5)">🎨 Stroop Challenge</div>
+    <div class="game-xp-badge">+10 XP / round</div>
+  </div>
+  <div class="mode-row">
+    <div class="mode-chip active" id="stroop-mode-hard" onclick="setStroopMode('stroop',this)">Stroop (hard)</div>
+    <div class="mode-chip" id="stroop-mode-easy" onclick="setStroopMode('congruent',this)">Congruent (easy)</div>
+  </div>
+  <div class="game-stats-row">
+    <div class="game-stat"><div class="gval" id="s-score" style="color:var(--accent3)">0</div><div class="glbl">Correct</div></div>
+    <div class="game-stat"><div class="gval" id="s-round" style="color:var(--accent2)">0/10</div><div class="glbl">Round</div></div>
+    <div class="game-stat"><div class="gval" id="s-streak" style="color:var(--accent5)">0</div><div class="glbl">Streak</div></div>
+  </div>
+  <div class="progress-strip"><div class="progress-strip-fill" id="s-progress" style="width:0%"></div></div>
+  <p class="stroop-instruction" id="s-instruction">Name the INK COLOR — ignore what the word says!</p>
+  <div class="stroop-word" id="stroop-word"><span style="color:var(--text2);font-size:1.2rem">Press Start!</span></div>
+  <div class="game-feedback" id="s-feedback"></div>
+  <div class="stroop-btns" id="stroop-btns">
+    <button class="stroop-btn" id="sb0" onclick="stroopGuess(0)">—</button>
+    <button class="stroop-btn" id="sb1" onclick="stroopGuess(1)">—</button>
+    <button class="stroop-btn" id="sb2" onclick="stroopGuess(2)">—</button>
+    <button class="stroop-btn" id="sb3" onclick="stroopGuess(3)">—</button>
+  </div>
+  <button class="play-btn" id="stroop-start-btn" onclick="startStroop()" style="margin-top:1rem;padding:12px 32px;font-size:1rem">Start Game</button>
+</div>
+
+<!-- ══ POMODORO ══ -->
+<div id="pomo-game" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="stopPomoAndGoHome()">←</button>
+    <div class="game-title" style="color:var(--accent3)">🍅 Pomodoro Timer</div>
+    <div class="game-xp-badge">+15 XP / cycle</div>
+  </div>
+  <div class="pomo-ring-wrap">
+    <svg width="220" height="220" viewBox="0 0 220 220">
+      <circle class="pomo-ring-bg" cx="110" cy="110" r="95"/>
+      <circle class="pomo-ring-fill" id="pomo-ring" cx="110" cy="110" r="95"
+        stroke-dasharray="597" stroke-dashoffset="0" stroke="url(#pg)"/>
+      <defs>
+        <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#06d6a0"/>
+          <stop offset="100%" stop-color="#74b9ff"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="pomo-center">
+      <div class="pomo-time" id="pomo-time">25:00</div>
+      <div class="pomo-label" id="pomo-phase-label">Focus</div>
+    </div>
+  </div>
+  <div class="pomo-cycles" id="pomo-cycles">
+    <div class="cycle-dot" id="cd0"></div><div class="cycle-dot" id="cd1"></div>
+    <div class="cycle-dot" id="cd2"></div><div class="cycle-dot" id="cd3"></div>
+  </div>
+  <div class="pomo-controls">
+    <button class="pomo-btn start" id="pomo-start-btn" onclick="togglePomo()">Start</button>
+    <button class="pomo-btn reset" onclick="resetPomo()">Reset</button>
+  </div>
+  <div class="pomo-settings">
+    <div class="pomo-setting-row">
+      <label>Focus (min)</label>
+      <input type="range" id="pomo-work-slider" min="5" max="60" step="5" value="25" oninput="updatePomoSettings()">
+      <span id="pomo-work-val">25</span>
+    </div>
+    <div class="pomo-setting-row">
+      <label>Short break (min)</label>
+      <input type="range" id="pomo-break-slider" min="1" max="15" step="1" value="5" oninput="updatePomoSettings()">
+      <span id="pomo-break-val">5</span>
+    </div>
+    <div class="pomo-setting-row">
+      <label>Long break (min)</label>
+      <input type="range" id="pomo-long-slider" min="10" max="30" step="5" value="20" oninput="updatePomoSettings()">
+      <span id="pomo-long-val">20</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TASK SORTER ══ -->
+<div id="task-game" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <div class="game-title" style="color:var(--accent2)">📦 Task Priority Sorter</div>
+    <div class="game-xp-badge">+5 XP / task sorted</div>
+  </div>
+  <div class="task-sorter-wrap">
+    <p class="task-sorter-prompt">Add your tasks below, then drag them into the right quadrant of the Eisenhower Matrix.</p>
+    <div class="task-input-row">
+      <input class="task-input" id="task-input" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()">
+      <button class="task-add-btn" onclick="addTask()">+</button>
+    </div>
+    <div class="unsorted-pool">
+      <div class="pool-label">Unsorted tasks</div>
+      <div id="unsorted-tasks"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;font-size:0.7rem;font-weight:800;color:var(--text2)">
+      <div style="text-align:center">← Urgent</div><div style="text-align:center">Not Urgent →</div>
+    </div>
+    <div class="eisenhower-grid" id="eisenhower-grid">
+      <div class="quadrant q1" id="q-do" ondragover="dragOver(event,this)" ondrop="drop(event,'do')">
+        <div class="q-label">🔥 Do Now</div>
+        <div class="q-label" style="font-size:0.65rem;color:var(--text2);font-weight:600;text-transform:none;letter-spacing:0">Urgent + Important</div>
+      </div>
+      <div class="quadrant q2" id="q-plan" ondragover="dragOver(event,this)" ondrop="drop(event,'plan')">
+        <div class="q-label">📅 Schedule</div>
+        <div class="q-label" style="font-size:0.65rem;color:var(--text2);font-weight:600;text-transform:none;letter-spacing:0">Important, not urgent</div>
+      </div>
+      <div class="quadrant q3" id="q-delegate" ondragover="dragOver(event,this)" ondrop="drop(event,'delegate')">
+        <div class="q-label">👋 Minimise</div>
+        <div class="q-label" style="font-size:0.65rem;color:var(--text2);font-weight:600;text-transform:none;letter-spacing:0">Urgent, not important</div>
+      </div>
+      <div class="quadrant q4" id="q-drop" ondragover="dragOver(event,this)" ondrop="drop(event,'drop')">
+        <div class="q-label">🗑 Drop It</div>
+        <div class="q-label" style="font-size:0.65rem;color:var(--text2);font-weight:600;text-transform:none;letter-spacing:0">Neither</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MEMORY PALACE ══ -->
+<div id="palace-game" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <div class="game-title" style="color:var(--accent4)">🎯 Memory Palace</div>
+    <div class="game-xp-badge">+20 XP / recall</div>
+  </div>
+  <div class="palace-wrap">
+    <p class="task-sorter-prompt" style="margin-bottom:1rem">Click a room, type what you want to remember there, then test yourself!</p>
+    <div class="palace-room-grid" id="palace-grid"></div>
+    <div class="palace-recall-area" id="palace-recall-area" style="display:none">
+      <div class="palace-recall-title">Test your memory — what did you place in each room?</div>
+      <div id="recall-questions"></div>
+      <button class="play-btn" onclick="checkRecall()" style="margin-top:6px">Check answers</button>
+      <div class="recall-result" id="recall-result"></div>
+    </div>
+    <button class="play-btn" id="palace-test-btn" onclick="startRecall()" style="margin-top:1rem;display:none">Test my memory ✨</button>
+  </div>
+</div>
+
+<!-- ══ BREATHING & MINDFULNESS ══ -->
+<div id="breath-game" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="stopBreathAndGoHome()">←</button>
+    <div class="game-title" style="color:var(--accent4)">🌬 Breathing & Mindfulness</div>
+    <div class="game-xp-badge">+10 XP / session</div>
+  </div>
+
+  <div class="breath-tabs">
+    <div class="breath-tab active" id="bt-humming" onclick="switchBreathMode('humming')">🐝 Humming Bee</div>
+    <div class="breath-tab" id="bt-alternate" onclick="switchBreathMode('alternate')">👃 Alternate Nostril</div>
+    <div class="breath-tab" id="bt-alpha" onclick="switchBreathMode('alpha')">🎵 Alpha Waves</div>
+  </div>
+
+  <!-- HUMMING BEE BREATHING -->
+  <div id="breath-humming" class="breath-panel">
+    <p class="breath-instruction">
+      <strong>Bhramari / Humming Bee Breath</strong><br>
+      Inhale deeply through your nose, then exhale slowly while humming like a bee 🐝. Close your eyes and feel the vibration calm your mind.
+    </p>
+    <div class="breath-visual-wrap">
+      <div class="breath-circle-outer"></div>
+      <div class="breath-circle" id="hum-circle" style="width:80px;height:80px;background:rgba(162,155,254,0.25)"></div>
+      <div class="breath-center-text">
+        <div class="breath-phase" id="hum-phase" style="color:var(--accent4)">Ready</div>
+        <div class="breath-timer" id="hum-timer" style="color:var(--text)">0</div>
+      </div>
+    </div>
+    <div class="humming-indicator" id="hum-indicator"></div>
+    <div class="breath-cycle-count" id="hum-cycles">Cycles: 0 / 7</div>
+    <div class="breath-controls">
+      <button class="breath-btn start-breath" id="hum-start-btn" onclick="startHumming()">Start</button>
+      <button class="breath-btn stop-breath" onclick="stopHumming()">Reset</button>
+    </div>
+  </div>
+
+  <!-- ALTERNATE NOSTRIL -->
+  <div id="breath-alternate" class="breath-panel" style="display:none">
+    <p class="breath-instruction">
+      <strong>Anulom Vilom / Alternate Nostril Breathing</strong><br>
+      Close one nostril, inhale through the other. Switch and exhale. Balances both brain hemispheres and calms the nervous system.
+    </p>
+    <div class="nostril-visual">
+      <div class="nostril-side" id="nostril-left">
+        <span>L</span>
+      </div>
+      <div class="nose-bridge">👃</div>
+      <div class="nostril-side" id="nostril-right">
+        <span>R</span>
+      </div>
+    </div>
+    <div class="breath-visual-wrap">
+      <div class="breath-circle-outer"></div>
+      <div class="breath-circle" id="alt-circle" style="width:80px;height:80px;background:rgba(116,185,255,0.25)"></div>
+      <div class="breath-center-text">
+        <div class="breath-phase" id="alt-phase" style="color:var(--accent6)">Ready</div>
+        <div class="breath-timer" id="alt-timer" style="color:var(--text)">0</div>
+      </div>
+    </div>
+    <div class="breath-instruction" id="alt-hand-guide" style="font-size:0.78rem;margin-top:0"></div>
+    <div class="breath-cycle-count" id="alt-cycles">Cycles: 0 / 5</div>
+    <div class="breath-controls">
+      <button class="breath-btn start-breath" id="alt-start-btn" onclick="startAlternate()">Start</button>
+      <button class="breath-btn stop-breath" onclick="stopAlternate()">Reset</button>
+    </div>
+  </div>
+
+  <!-- ALPHA WAVE MUSIC -->
+  <div id="breath-alpha" class="breath-panel" style="display:none">
+    <p class="breath-instruction">
+      <strong>Alpha Wave Binaural Beats (8–12 Hz)</strong><br>
+      Put on headphones for best effect. Alpha waves promote relaxed alertness, creativity, and calm focus. Combine with deep breathing for maximum benefit.
+    </p>
+    <canvas id="alpha-canvas" class="alpha-wave-vis" width="420" height="80"></canvas>
+    <div class="alpha-controls">
+      <div class="alpha-row">
+        <label>Base frequency (Hz)</label>
+        <input type="range" id="alpha-freq" min="100" max="400" step="10" value="200" oninput="updateAlphaLabel()">
+        <span id="alpha-freq-val">200</span>
+      </div>
+      <div class="alpha-row">
+        <label>Beat frequency (Hz)</label>
+        <input type="range" id="alpha-beat" min="4" max="14" step="0.5" value="10" oninput="updateAlphaLabel()">
+        <span id="alpha-beat-val">10</span>
+      </div>
+      <div class="alpha-row">
+        <label>Volume</label>
+        <input type="range" id="alpha-vol" min="0" max="100" step="5" value="40" oninput="updateAlphaVol()">
+        <span id="alpha-vol-val">40%</span>
+      </div>
+      <div class="alpha-row">
+        <label>Background rain</label>
+        <input type="range" id="alpha-rain-vol" min="0" max="100" step="5" value="30" oninput="updateRainVol()">
+        <span id="alpha-rain-val">30%</span>
+      </div>
+      <div class="alpha-row">
+        <label>Session (min)</label>
+        <input type="range" id="alpha-dur" min="1" max="30" step="1" value="5" oninput="updateAlphaLabel()">
+        <span id="alpha-dur-val">5</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:1rem">
+      <div class="breath-timer" id="alpha-timer" style="color:var(--accent4);font-size:2rem;margin-bottom:0.75rem">5:00</div>
+    </div>
+    <div class="breath-controls" style="justify-content:center">
+      <button class="breath-btn start-breath" id="alpha-start-btn" onclick="toggleAlpha()">Play</button>
+      <button class="breath-btn stop-breath" onclick="stopAlpha()">Stop</button>
+    </div>
+    <p class="breath-instruction" style="font-size:0.72rem;margin-top:1rem;opacity:0.7">
+      🎧 Headphones required for binaural effect. Each ear receives a slightly different frequency — your brain perceives the difference as a gentle pulsing tone.
+    </p>
+  </div>
+</div>
+
+<!-- ══ PROGRESS ══ -->
+<div id="progress" class="screen">
+  <div class="progress-header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <div class="prog-title">📊 My Progress</div>
+  </div>
+
+  <div style="width:100%;max-width:560px;margin-bottom:1.25rem">
+    <div class="player-bar" id="prog-player-bar" style="margin-bottom:0">
+      <div class="player-avatar" id="prog-avatar">🦁</div>
+      <div class="player-info">
+        <div class="player-name" id="prog-name">Player</div>
+        <div class="player-level" id="prog-level">Level 1</div>
+        <div class="xp-bar-wrap"><div class="xp-bar-fill" id="prog-xp-bar" style="width:0%"></div></div>
+      </div>
+      <div class="player-stats">
+        <div class="stat-item"><div class="val" id="prog-xp-val">0</div><div class="lbl">Total XP</div></div>
+        <div class="stat-item"><div class="val" id="prog-done-val">0</div><div class="lbl">Done</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:560px;font-size:0.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.6rem">Skill mastery</div>
+  <div class="skill-progress-section" id="skill-progress-section"></div>
+
+  <div style="width:100%;max-width:560px;font-size:0.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin:1.25rem 0 0.6rem">Achievements</div>
+  <div class="achievement-grid" id="achievement-grid"></div>
+
+  <button class="reset-btn" onclick="confirmReset()">Reset progress</button>
+</div>
+
+<!-- RESULT OVERLAY -->
+<div class="result-overlay" id="result-overlay">
+  <div class="result-emoji" id="res-emoji">🎉</div>
+  <div class="result-title" id="res-title">Amazing!</div>
+  <div class="result-sub" id="res-sub">You completed the exercise</div>
+  <div class="result-xp" id="res-xp">+50 XP earned!</div>
+  <div class="result-btns">
+    <button class="result-btn primary" onclick="playAgain()">Play again</button>
+    <button class="result-btn secondary" onclick="closeResult()">Back to home</button>
+  </div>
+</div>
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <button class="nav-item active" id="nav-home" onclick="showScreen('home')">
+    <span class="nav-icon">🏠</span>Home
+  </button>
+  <button class="nav-item" id="nav-stroop" onclick="showScreen('stroop-game')">
+    <span class="nav-icon">🎨</span>Stroop
+  </button>
+  <button class="nav-item" id="nav-pomo" onclick="showScreen('pomo-game')">
+    <span class="nav-icon">🍅</span>Pomodoro
+  </button>
+  <button class="nav-item" id="nav-task" onclick="showScreen('task-game')">
+    <span class="nav-icon">📦</span>Tasks
+  </button>
+  <button class="nav-item" id="nav-palace" onclick="showScreen('palace-game')">
+    <span class="nav-icon">🎯</span>Palace
+  </button>
+  <button class="nav-item" id="nav-breath" onclick="showScreen('breath-game')">
+    <span class="nav-icon">🌬</span>Breathe
+  </button>
+  <button class="nav-item" id="nav-progress" onclick="showScreen('progress')">
+    <span class="nav-icon">📊</span>Progress
+  </button>
+</div>
+
+</div><!-- end app -->
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const TECHNIQUES = [
+  {icon:"🎨",iconBg:"rgba(253,121,168,0.15)",title:"Stroop Effect Games",sub:"Conflict resolution between automatic and deliberate thinking",detail:"Name the ink color of a word, not what the word says. Builds inhibitory control and selective attention. Try variants with shapes or numbers.",skills:["focus","cognitive"],ages:["elem","middle","high"],isNew:false,game:"stroop-game"},
+  {icon:"🧩",iconBg:"rgba(6,214,160,0.15)",title:"Tangram Puzzles",sub:"Spatial reasoning and visual problem solving",detail:"Use 7 flat geometric shapes to form silhouettes. Develops spatial visualization, geometry intuition, and persistence. Great for solo or family play.",skills:["problem","cognitive"],ages:["elem","middle"],isNew:false,game:null},
+  {icon:"🔍",iconBg:"rgba(116,185,255,0.15)",title:"Where's Waldo / I Spy",sub:"Sustained visual attention and scanning strategy",detail:"Timed visual search trains kids to build scanning systems. Introduce strategies: scan in rows, use landmarks, divide image into zones. Progress to harder scenes.",skills:["focus"],ages:["elem","middle"],isNew:false,game:null},
+  {icon:"♟",iconBg:"rgba(255,209,102,0.15)",title:"Chess & Strategy Games",sub:"Multi-step planning and consequence thinking",detail:"Chess, Othello, Connect Four require visualizing future states. Kids learn to think 2–3 moves ahead, evaluate trade-offs, and adapt. Even losing is cognitively rich.",skills:["problem","cognitive"],ages:["elem","middle","high"],isNew:false,game:null},
+  {icon:"✍️",iconBg:"rgba(162,155,254,0.15)",title:"Mind Mapping",sub:"Radial note-taking that mirrors how memory works",detail:"Start with a central idea and branch outward. Encourages non-linear thinking, great for studying and brainstorming. Use color-coded branches.",skills:["creative","cognitive"],ages:["middle","high"],isNew:false,game:null},
+  {icon:"🎭",iconBg:"rgba(255,107,107,0.15)",title:"Improv & Role-Play",sub:"Spontaneous thinking, empathy, and flexible response",detail:"'Yes, And...' improv rules train kids to accept ideas and build on them. Role-playing scenarios builds perspective-taking and quick thinking.",skills:["creative","social"],ages:["elem","middle","high"],isNew:false,game:null},
+  {icon:"🔢",iconBg:"rgba(6,214,160,0.15)",title:"Mental Arithmetic Sprints",sub:"Working memory and numerical fluency under pressure",detail:"Timed oral math drills without writing strengthen working memory. The child must hold partial results in mind. Progress from single-digit to multi-step operations.",skills:["focus","cognitive"],ages:["elem","middle","high"],isNew:false,game:null},
+  {icon:"🧠",iconBg:"rgba(116,185,255,0.15)",title:"Dual N-Back Training",sub:"The most research-backed working memory exercise",detail:"A sequence of positions and sounds is shown; child recalls what appeared N steps ago. Starts at 1-back and increases difficulty. Free apps available.",skills:["focus","cognitive"],ages:["middle","high"],isNew:false,game:null},
+  {icon:"📖",iconBg:"rgba(255,209,102,0.15)",title:"Socratic Questioning",sub:"Deep reasoning through structured dialogue",detail:"Read a short text together, then ask layered questions: What do you think? Why? What if the opposite were true? Used in Philosophy for Children (P4C) programmes.",skills:["problem","cognitive","social"],ages:["middle","high"],isNew:false,game:null},
+  {icon:"🎲",iconBg:"rgba(6,214,160,0.15)",title:"Coding & Logic Puzzles",sub:"Decomposition and algorithmic thinking",detail:"Scratch (7–12) and Python (12+) teach breaking problems into steps. Unplugged coding — writing instructions to navigate a room — also works without a computer.",skills:["problem","cognitive"],ages:["elem","middle","high"],isNew:false,game:null},
+  {icon:"🌀",iconBg:"rgba(162,155,254,0.15)",title:"SCAMPER Technique",sub:"Structured creative idea generation",detail:"Substitute, Combine, Adapt, Modify, Put to other uses, Eliminate, Reverse. Give a child an object and ask how many uses they can find. Builds divergent thinking.",skills:["creative","problem"],ages:["middle","high"],isNew:false,game:null},
+  {icon:"🎵",iconBg:"rgba(253,121,168,0.15)",title:"Music Learning",sub:"Cross-brain coordination and emotional processing",detail:"Learning an instrument trains reading (notation), motor control, listening, memory, and timing simultaneously. Even 15 min/day improves language and math processing.",skills:["focus","cognitive","creative"],ages:["elem","middle","high"],isNew:false,game:null},
+  {icon:"🔭",iconBg:"rgba(116,185,255,0.15)",title:"Observation Journals",sub:"Sustained attention and scientific noticing",detail:"Kids pick a subject and write or draw observations over time. Trains patience, detail-noticing, description, and change detection. Pairs well with nature walks.",skills:["focus","creative"],ages:["elem","middle","high"],isNew:false,game:null},
+  {icon:"🤔",iconBg:"rgba(255,209,102,0.15)",title:"Lateral Thinking Puzzles",sub:"Breaking out of linear assumptions",detail:"Classic puzzles force kids to ask yes/no questions and think outside expected frames. Edward de Bono's work shows lasting benefits for creative problem-solving.",skills:["problem","creative"],ages:["middle","high"],isNew:false,game:null},
+  {icon:"🏗",iconBg:"rgba(6,214,160,0.15)",title:"Building Challenges",sub:"Engineering thinking with physical feedback",detail:"Build the tallest tower with 20 bricks; a bridge that holds a 200g book. Constraints force creative engineering. When it collapses, kids iterate — not give up.",skills:["problem","creative","cognitive"],ages:["elem","middle"],isNew:false,game:null},
+  {icon:"🌬",iconBg:"rgba(162,155,254,0.15)",title:"Mindfulness & Breathing",sub:"Humming bee, alternate nostril breathing & alpha waves",detail:"Three guided exercises: Bhramari (humming bee) breathing calms the nervous system, alternate nostril breathing balances brain hemispheres, and alpha wave binaural beats promote relaxed focus.",skills:["focus","social"],ages:["elem","middle","high"],isNew:false,game:"breath-game"},
+  {icon:"📰",iconBg:"rgba(255,107,107,0.15)",title:"Random Prompt Storytelling",sub:"Narrative construction and imaginative linking",detail:"Roll a die or open a dictionary to a random word. Build a story in 60 seconds. Rory's Story Cubes is a great tool. Develops narrative structure and associative thinking.",skills:["creative","cognitive"],ages:["elem","middle","high"],isNew:false,game:null},
+  {icon:"🗺",iconBg:"rgba(162,155,254,0.15)",title:"Design Thinking",sub:"Empathy-led invention and iterative prototyping",detail:"Brief: 'Design a better school bag for a kid with back pain.' Go Empathize → Define → Ideate → Prototype → Test. Stanford d.school has free K-12 materials.",skills:["problem","creative","social"],ages:["middle","high"],isNew:false,game:null},
+  {icon:"🎯",iconBg:"rgba(162,155,254,0.15)",title:"Memory Palace",sub:"Spatial memory encoding for long-term retention",detail:"Mentally walk through a familiar place and place vivid images representing things to remember in each room. Used by memory champions. Proven to boost recall from age 9.",skills:["cognitive"],ages:["middle","high"],isNew:false,game:"palace-game"},
+  {icon:"🗣",iconBg:"rgba(6,214,160,0.15)",title:"Debate & Persuasion",sub:"Structured reasoning and evidence evaluation",detail:"Assign kids to argue a position they may disagree with. Forces research, logical structure, counter-argument anticipation, and respectful rebuttal. Great for everyday topics.",skills:["problem","social","cognitive"],ages:["middle","high"],isNew:false,game:null},
+  {icon:"⏰",iconBg:"rgba(6,214,160,0.15)",title:"Visual Countdown Timer",sub:"Making abstract time concrete and visible",detail:"Use a visible timer showing time shrinking. Before tasks: 'You have 15 minutes — watch the time disappear.' Kids can't feel minutes; seeing it makes time real. Practice with fun tasks first!",skills:["time","focus"],ages:["elem"],isNew:true,game:"pomo-game"},
+  {icon:"📋",iconBg:"rgba(6,214,160,0.15)",title:"Picture-Based Daily Schedule",sub:"Sequencing the day with visual anchors",detail:"Create a morning/evening routine chart using drawings or printed pictures. Child moves a peg as each task is done. Builds internal sequencing and gives kids ownership of their routine.",skills:["time","cognitive"],ages:["elem"],isNew:true,game:null},
+  {icon:"🗓",iconBg:"rgba(6,214,160,0.15)",title:"Homework-First Habit",sub:"Prioritisation and delayed gratification training",detail:"A simple agreement: homework before screens or free play. Child signs it. This makes the rule external so the child stops negotiating internally every day. Pair with a visible timer.",skills:["time","social"],ages:["elem","middle"],isNew:true,game:null},
+  {icon:"📦",iconBg:"rgba(6,214,160,0.15)",title:"3-Box Task Sort",sub:"Priority thinking: urgent, important, later",detail:"Label three zones: Do Now, Do Later, Ask for Help. Sort before starting. Even a simple must-do vs nice-to-do teaches that not all tasks are equal — crucial for school and life.",skills:["time","problem"],ages:["elem","middle"],isNew:true,game:"task-game"},
+  {icon:"📅",iconBg:"rgba(6,214,160,0.15)",title:"Weekly Planner & Tracker",sub:"Forward planning and deadline awareness",detail:"A weekly grid: write homework in its due-day column. Review every Sunday. Teaches backward planning — if it's due Friday, when do I start? Start with one subject, then expand.",skills:["time","cognitive"],ages:["middle","high"],isNew:true,game:"task-game"},
+  {icon:"🍅",iconBg:"rgba(6,214,160,0.15)",title:"Pomodoro Technique",sub:"Structured work-break cycles for stamina",detail:"25 min focused work → 5 min break → repeat. After 4 cycles, take a 20-min break. For younger kids try 15/5 intervals. Builds distraction resistance and shows focus is renewable.",skills:["time","focus"],ages:["middle","high"],isNew:true,game:"pomo-game"},
+  {icon:"🔺",iconBg:"rgba(6,214,160,0.15)",title:"Eisenhower Matrix",sub:"Urgency vs importance — the core of prioritisation",detail:"A 2×2 grid: Urgent+Important (do now), Important only (schedule), Urgent only (minimise), Neither (drop). Builds the habit of asking 'does this actually matter?' before acting.",skills:["time","problem","cognitive"],ages:["high"],isNew:true,game:"task-game"},
+  {icon:"🌙",iconBg:"rgba(6,214,160,0.15)",title:"Night-Before Prep Ritual",sub:"Reducing morning cognitive load through planning",detail:"Every evening: pack bag, lay out clothes, review tomorrow's schedule, write one key goal. Takes 10 min but removes 6–8 decision points from the morning. Reduces stress and improves sleep.",skills:["time","cognitive","social"],ages:["middle","high"],isNew:true,game:null},
+];
+
+const LEVELS = ["Brain Beginner","Curious Explorer","Focus Ninja","Mind Master","Cognitive Champion","BrainGym Legend"];
+const ACHIEVEMENTS = [
+  {id:"first_play",icon:"🌟",name:"First step!",desc:"Played your first game"},
+  {id:"stroop5",icon:"🎨",name:"Stroop rookie",desc:"Finish 5 Stroop rounds"},
+  {id:"stroop_perfect",icon:"💎",name:"Perfect focus",desc:"Score 10/10 on Stroop"},
+  {id:"pomo1",icon:"🍅",name:"First Pomodoro",desc:"Complete one focus cycle"},
+  {id:"pomo4",icon:"🔥",name:"Deep work",desc:"Complete 4 Pomodoro cycles"},
+  {id:"task10",icon:"📦",name:"Task master",desc:"Sort 10 tasks"},
+  {id:"palace3",icon:"🏛",name:"Palace builder",desc:"Recall 3 items correctly"},
+  {id:"xp100",icon:"⚡",name:"XP rush",desc:"Earn 100 XP"},
+  {id:"xp500",icon:"🚀",name:"XP rocket",desc:"Earn 500 XP"},
+  {id:"streak3",icon:"🔥",name:"On fire!",desc:"3 Stroop in a row correct"},
+  {id:"breath1",icon:"🌬",name:"First breath",desc:"Complete a breathing session"},
+  {id:"breath5",icon:"🧘",name:"Zen master",desc:"Complete 5 breathing sessions"},
+  {id:"alpha1",icon:"🎵",name:"Brain waves",desc:"Listen to alpha waves"},
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let state = {
+  name: '', avatar: '🦁', ageGroup: '',
+  xp: 0, completedIds: [],
+  unlockedAchievements: [],
+  stroopGamesPlayed: 0,
+  pomodoroCycles: 0,
+  tasksSorted: 0,
+  palaceRecalls: 0,
+  breathingSessions: 0,
+  maxStroopStreak: 0,
+};
+let currentScreen = 'onboarding';
+let skillFilter = 'all', ageFilter = 'all';
+let expandedCards = {};
+
+// ═══════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════
+function saveState() {
+  try { localStorage.setItem('braingym_state', JSON.stringify(state)); } catch(e){}
+}
+function loadState() {
+  try {
+    const s = localStorage.getItem('braingym_state');
+    if (s) { state = Object.assign(state, JSON.parse(s)); return true; }
+  } catch(e){}
+  return false;
+}
+
+// ═══════════════════════════════════════
+// LEVEL SYSTEM
+// ═══════════════════════════════════════
+function getLevel(xp) {
+  const thresholds = [0,100,300,600,1000,1500];
+  let lv = 0;
+  for (let i=0;i<thresholds.length;i++) { if (xp >= thresholds[i]) lv = i; }
+  return lv;
+}
+function getLevelProgress(xp) {
+  const thresholds = [0,100,300,600,1000,1500,9999];
+  const lv = getLevel(xp);
+  const curr = thresholds[lv], next = thresholds[lv+1];
+  return Math.min(100, Math.round((xp - curr) / (next - curr) * 100));
+}
+function addXP(amount) {
+  state.xp += amount;
+  checkAchievements();
+  saveState();
+  updatePlayerBar();
+}
+
+// ═══════════════════════════════════════
+// ACHIEVEMENTS
+// ═══════════════════════════════════════
+function checkAchievements() {
+  const unlock = (id) => {
+    if (!state.unlockedAchievements.includes(id)) {
+      state.unlockedAchievements.push(id);
+    }
+  };
+  if (state.stroopGamesPlayed >= 1) unlock('first_play');
+  if (state.stroopGamesPlayed >= 5) unlock('stroop5');
+  if (state.pomodoroCycles >= 1) unlock('pomo1');
+  if (state.pomodoroCycles >= 4) unlock('pomo4');
+  if (state.tasksSorted >= 10) unlock('task10');
+  if (state.palaceRecalls >= 3) unlock('palace3');
+  if (state.xp >= 100) unlock('xp100');
+  if (state.xp >= 500) unlock('xp500');
+  if (state.maxStroopStreak >= 3) unlock('streak3');
+  if (state.breathingSessions >= 1) unlock('breath1');
+  if (state.breathingSessions >= 5) unlock('breath5');
+}
+function unlockAchievement(id) {
+  if (!state.unlockedAchievements.includes(id)) {
+    state.unlockedAchievements.push(id);
+    saveState();
+  }
+}
+
+// ═══════════════════════════════════════
+// SCREEN MANAGEMENT
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentScreen = id;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = {'home':'nav-home','stroop-game':'nav-stroop','pomo-game':'nav-pomo','task-game':'nav-task','palace-game':'nav-palace','breath-game':'nav-breath','progress':'nav-progress'};
+  if (navMap[id]) document.getElementById(navMap[id]).classList.add('active');
+  if (id === 'home') { renderCards(); updatePlayerBar(); }
+  if (id === 'progress') renderProgress();
+  if (id === 'palace-game') initPalace();
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════
+function startJourney() {
+  const nameVal = document.getElementById('name-input').value.trim();
+  if (!nameVal) { document.getElementById('name-input').focus(); return; }
+  const ageEl = document.querySelector('.age-opt.selected');
+  if (!ageEl) { alert('Please pick your age group!'); return; }
+  state.name = nameVal;
+  state.ageGroup = ageEl.dataset.age;
+  saveState();
+  showScreen('home');
+  updatePlayerBar();
+}
+document.querySelectorAll('.avatar-opt').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.avatar-opt').forEach(a => a.classList.remove('selected'));
+    el.classList.add('selected');
+    state.avatar = el.dataset.av;
+  });
+});
+document.querySelectorAll('.age-opt').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.age-opt').forEach(a => a.classList.remove('selected'));
+    el.classList.add('selected');
+    // auto set age filter
+    ageFilter = el.dataset.age;
+  });
+});
+
+// ═══════════════════════════════════════
+// PLAYER BAR
+// ═══════════════════════════════════════
+function updatePlayerBar() {
+  const lv = getLevel(state.xp);
+  const pct = getLevelProgress(state.xp);
+  ['player-avatar','prog-avatar'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=state.avatar; });
+  ['player-name-disp','prog-name'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=state.name||'Player'; });
+  const lvText = `Level ${lv+1} — ${LEVELS[Math.min(lv,LEVELS.length-1)]}`;
+  ['player-level-disp','prog-level'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=lvText; });
+  ['xp-bar-fill','prog-xp-bar'].forEach(id => { const el=document.getElementById(id); if(el) el.style.width=pct+'%'; });
+  ['stat-xp','prog-xp-val'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=state.xp; });
+  const el = document.getElementById('stat-streak');
+  if (el) el.textContent = state.maxStroopStreak;
+  const doneEl = document.getElementById('prog-done-val');
+  if (doneEl) doneEl.textContent = state.completedIds.length;
+}
+
+// ═══════════════════════════════════════
+// HOME CARDS
+// ═══════════════════════════════════════
+const TAG_MAP = {
+  focus:['tag-focus','Focus'], creative:['tag-creative','Creativity'],
+  problem:['tag-problem','Problem solving'], cognitive:['tag-cognitive','Cognitive'],
+  social:['tag-social','Social'], time:['tag-time','Time management']
+};
+function agePill(ages) {
+  const labels={elem:'Elem',middle:'Middle',high:'High'};
+  if(ages.length===3) return 'All ages';
+  return ages.map(a=>labels[a]).join(', ');
+}
+
+function renderCards() {
+  const isPlayableMode = ageFilter === 'playable';
+
+  const filtered = TECHNIQUES.filter(t => {
+    const skillOk = skillFilter === 'all' || t.skills.includes(skillFilter);
+    let ageOk;
+    if (isPlayableMode) {
+      ageOk = !!t.game; // only games
+    } else {
+      ageOk = ageFilter === 'all' || t.ages.includes(ageFilter);
+    }
+    return skillOk && ageOk;
+  });
+
+  document.getElementById('cards-meta').textContent = `Showing ${filtered.length} of ${TECHNIQUES.length} techniques`;
+
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+
+  if (isPlayableMode) {
+    // Playable mode: show only interactive games, grouped by game type
+    const playable = filtered; // already filtered to game !== null
+    if (playable.length === 0) {
+      grid.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text2);font-size:0.9rem">No playable games match this skill filter.</div>`;
+      return;
+    }
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:0.72rem;font-weight:800;color:var(--accent2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;';
+    lbl.textContent = '▶ Interactive games — tap to play';
+    grid.appendChild(lbl);
+    playable.forEach((t, i) => {
+      const idx = TECHNIQUES.indexOf(t);
+      const done = state.completedIds.includes(t.title);
+      const card = document.createElement('div');
+      card.className = 'technique-card';
+      card.style.cssText = `animation-delay:${i*0.05}s; border:1.5px solid rgba(255,209,102,0.18); cursor:pointer;`;
+      card.onclick = () => showScreen(t.game);
+      const tagsHTML = t.skills.map(s=>`<span class="tag ${TAG_MAP[s][0]}">${TAG_MAP[s][1]}</span>`).join('');
+      const tick = done ? `<div class="completed-tick">✓</div>` : '';
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-icon" style="background:${t.iconBg};font-size:1.6rem">${t.icon}</div>
+          <div class="card-body">
+            <div class="card-title-row">
+              <span class="card-title">${t.title}</span>
+              ${t.isNew ? '<span class="new-badge">New</span>' : ''}
+            </div>
+            <div class="card-sub">${t.sub}</div>
+            <div class="card-tags">${tagsHTML}<span class="tag age-tag">${agePill(t.ages)}</span></div>
+          </div>
+          ${tick}
+        </div>
+        <button class="play-btn" style="margin-top:10px;width:100%;text-align:center;padding:12px;" onclick="event.stopPropagation();showScreen('${t.game}')">▶ Launch game</button>
+      `;
+      grid.appendChild(card);
+    });
+    return;
+  }
+
+  // Normal mode: strictly separate playable from reference
+  const playableCards = filtered.filter(t => !!t.game);
+  const referenceCards = filtered.filter(t => !t.game);
+
+  function makeCard(t, i) {
+    const idx = TECHNIQUES.indexOf(t);
+    const done = state.completedIds.includes(t.title);
+    const card = document.createElement('div');
+    card.className = 'technique-card' + (t.isNew ? ' time-card' : '');
+    card.style.animationDelay = (i * 0.04) + 's';
+    const tagsHTML = t.skills.map(s=>`<span class="tag ${TAG_MAP[s][0]}">${TAG_MAP[s][1]}</span>`).join('');
+    const playBtn = t.game ? `<button class="play-btn" onclick="event.stopPropagation();showScreen('${t.game}')">▶ Play this exercise</button>` : '';
+    const detailHTML = expandedCards[idx] ? `<div class="card-detail">${t.detail}${playBtn}</div>` : '';
+    const tick = done ? `<div class="completed-tick">✓</div>` : '';
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-icon" style="background:${t.iconBg}">${t.icon}</div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">${t.title}</span>
+            ${t.isNew ? '<span class="new-badge">New</span>' : ''}
+            ${t.game ? `<span class="playable-badge" onclick="event.stopPropagation();showScreen('${t.game}')">▶ Play</span>` : ''}
+          </div>
+          <div class="card-sub">${t.sub}</div>
+          <div class="card-tags">${tagsHTML}<span class="tag age-tag">${agePill(t.ages)}</span></div>
+        </div>
+        ${tick}
+      </div>
+      ${detailHTML}
+      <button class="expand-btn" onclick="toggleCard(${idx})" style="font-size:12px;color:var(--text2);border:none;background:none;cursor:pointer;padding:4px 0;font-family:'Nunito',sans-serif">
+        ${expandedCards[idx] ? 'Hide ▲' : 'How it works ▼'}
+      </button>
+    `;
+    return card;
+  }
+
+  function sectionLabel(text, color) {
+    const lbl = document.createElement('div');
+    lbl.style.cssText = `font-size:0.72rem;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;`;
+    lbl.textContent = text;
+    return lbl;
+  }
+
+  // ── PLAYABLE SECTION ──
+  if (playableCards.length > 0) {
+    grid.appendChild(sectionLabel(`▶ Playable games (${playableCards.length})`, 'var(--accent2)'));
+    playableCards.forEach((t, i) => grid.appendChild(makeCard(t, i)));
+  }
+
+  // ── REFERENCE SECTION ──
+  if (referenceCards.length > 0) {
+    const refLbl = document.createElement('div');
+    refLbl.style.cssText = 'font-size:0.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin:16px 0 6px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);';
+    refLbl.textContent = `📚 Reference techniques (${referenceCards.length})`;
+    grid.appendChild(refLbl);
+    referenceCards.forEach((t, i) => grid.appendChild(makeCard(t, playableCards.length + i)));
+  }
+}
+function toggleCard(idx) { expandedCards[idx]=!expandedCards[idx]; renderCards(); }
+
+// FILTER CHIPS
+document.querySelectorAll('#skill-chips .chip').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('#skill-chips .chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    skillFilter = el.dataset.skill;
+    renderCards();
+  });
+});
+document.querySelectorAll('#age-chips .chip').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('#age-chips .chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    ageFilter = el.dataset.age;
+    renderCards();
+  });
+});
+
+// ═══════════════════════════════════════
+// STROOP GAME
+// ═══════════════════════════════════════
+const STROOP_COLORS = [
+  {name:'Red',hex:'#ff6b6b'},{name:'Blue',hex:'#74b9ff'},{name:'Green',hex:'#06d6a0'},
+  {name:'Orange',hex:'#fd9644'},{name:'Purple',hex:'#a29bfe'},{name:'Pink',hex:'#fd79a8'}
+];
+let stroopMode='stroop', stroopScore=0, stroopRound=0, stroopStreak=0;
+let stroopTotal=10, stroopCurrent=null, stroopOptions=[], stroopLocked=false, stroopActive=false;
+
+function setStroopMode(m, btn) {
+  stroopMode = m;
+  document.querySelectorAll('.mode-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('s-instruction').textContent = m==='stroop'
+    ? 'Name the INK COLOR — ignore what the word says!'
+    : 'Both word and color match — click the right color!';
+}
+function shuffle(arr) { return [...arr].sort(()=>Math.random()-0.5); }
+
+function stroopNext() {
+  if (stroopRound >= stroopTotal) { endStroop(); return; }
+  stroopLocked = false;
+  stroopRound++;
+  document.getElementById('s-round').textContent = stroopRound+'/'+stroopTotal;
+  document.getElementById('s-progress').style.width = ((stroopRound-1)/stroopTotal*100)+'%';
+  document.getElementById('s-feedback').textContent = '';
+  document.getElementById('s-feedback').style.color = '';
+
+  const pool = shuffle(STROOP_COLORS);
+  const inkColor = pool[0];
+  let wordColor;
+  if (stroopMode==='stroop') {
+    do { wordColor=STROOP_COLORS[Math.floor(Math.random()*STROOP_COLORS.length)]; } while(wordColor.name===inkColor.name);
+  } else { wordColor = inkColor; }
+
+  stroopCurrent = {inkColor, wordColor};
+  stroopOptions = shuffle([inkColor,...pool.slice(1,4)]);
+
+  document.getElementById('stroop-word').innerHTML = `<span style="color:${inkColor.hex}">${wordColor.name}</span>`;
+  stroopOptions.forEach((c,i) => {
+    const b = document.getElementById('sb'+i);
+    b.textContent = c.name; b.className = 'stroop-btn'; b.disabled=false;
+  });
+}
+function stroopGuess(i) {
+  if (stroopLocked||!stroopActive) return;
+  stroopLocked=true;
+  const chosen=stroopOptions[i], correct=chosen.name===stroopCurrent.inkColor.name;
+  const fb=document.getElementById('s-feedback');
+  if (correct) {
+    stroopScore++; stroopStreak++;
+    if(stroopStreak>state.maxStroopStreak){state.maxStroopStreak=stroopStreak;}
+    document.getElementById('sb'+i).className='stroop-btn correct';
+    fb.style.color='var(--accent3)';
+    fb.textContent = stroopStreak>=3?'🔥 '+stroopStreak+' in a row!':'✓ Correct!';
+  } else {
+    stroopStreak=0;
+    document.getElementById('sb'+i).className='stroop-btn wrong';
+    fb.style.color='var(--accent1)';
+    fb.textContent='✗ The ink color was '+stroopCurrent.inkColor.name;
+    stroopOptions.forEach((c,j)=>{if(c.name===stroopCurrent.inkColor.name) document.getElementById('sb'+j).className='stroop-btn correct';});
+  }
+  document.getElementById('s-score').textContent=stroopScore;
+  document.getElementById('s-streak').textContent=stroopStreak;
+  setTimeout(stroopNext, 900);
+}
+function startStroop() {
+  stroopScore=0;stroopRound=0;stroopStreak=0;stroopActive=true;
+  document.getElementById('stroop-start-btn').style.display='none';
+  stroopNext();
+}
+function endStroop() {
+  stroopActive=false;
+  state.stroopGamesPlayed++;
+  const xpEarned = stroopScore * 10;
+  addXP(xpEarned);
+  if (stroopScore>=10) unlockAchievement('stroop_perfect');
+  if (state.stroopGamesPlayed>=5) unlockAchievement('stroop5');
+  unlockAchievement('first_play');
+  if (!state.completedIds.includes('Stroop Effect Games')) state.completedIds.push('Stroop Effect Games');
+  saveState();
+  showResult(
+    stroopScore>=8?'🎉':'😤',
+    stroopScore>=8?'Incredible focus!':stroopScore>=5?'Good effort!':'Keep practicing!',
+    `You scored ${stroopScore}/${stroopTotal} on the Stroop Challenge`,
+    xpEarned,
+    ()=>{showScreen('stroop-game');document.getElementById('stroop-start-btn').style.display='block';}
+  );
+}
+
+// ═══════════════════════════════════════
+// POMODORO
+// ═══════════════════════════════════════
+let pomoWorkMin=25, pomoBreakMin=5, pomoLongMin=20;
+let pomoCyclesDone=0, pomoPhase='work', pomoSecondsLeft=25*60;
+let pomoInterval=null, pomoRunning=false;
+const CIRC=2*Math.PI*95;
+
+function updatePomoSettings() {
+  pomoWorkMin=parseInt(document.getElementById('pomo-work-slider').value);
+  pomoBreakMin=parseInt(document.getElementById('pomo-break-slider').value);
+  pomoLongMin=parseInt(document.getElementById('pomo-long-slider').value);
+  document.getElementById('pomo-work-val').textContent=pomoWorkMin;
+  document.getElementById('pomo-break-val').textContent=pomoBreakMin;
+  document.getElementById('pomo-long-val').textContent=pomoLongMin;
+  if (!pomoRunning) { pomoSecondsLeft=pomoWorkMin*60; pomoPhase='work'; renderPomo(); }
+}
+function renderPomo() {
+  const m=Math.floor(pomoSecondsLeft/60), s=pomoSecondsLeft%60;
+  document.getElementById('pomo-time').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+  const total = (pomoPhase==='work'?pomoWorkMin:pomoPhase==='break'?pomoBreakMin:pomoLongMin)*60;
+  const pct = pomoSecondsLeft/total;
+  document.getElementById('pomo-ring').style.strokeDashoffset = (CIRC*(1-pct)).toFixed(2);
+  document.getElementById('pomo-phase-label').textContent = pomoPhase==='work'?'Focus':(pomoPhase==='break'?'Short Break':'Long Break');
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('cd'+i);
+    if(d) d.className='cycle-dot'+(i<pomoCyclesDone%4?' done':'');
+  }
+}
+function togglePomo() {
+  if (pomoRunning) {
+    clearInterval(pomoInterval); pomoRunning=false;
+    document.getElementById('pomo-start-btn').textContent='Resume';
+  } else {
+    pomoRunning=true;
+    document.getElementById('pomo-start-btn').textContent='Pause';
+    pomoInterval=setInterval(()=>{
+      pomoSecondsLeft--;
+      if (pomoSecondsLeft<=0) {
+        if (pomoPhase==='work') {
+          pomoCyclesDone++;
+          state.pomodoroCycles++;
+          addXP(15);
+          unlockAchievement('pomo1');
+          if(state.pomodoroCycles>=4) unlockAchievement('pomo4');
+          if (!state.completedIds.includes('Pomodoro Technique')) state.completedIds.push('Pomodoro Technique');
+          saveState();
+          if(pomoCyclesDone%4===0){pomoPhase='long';pomoSecondsLeft=pomoLongMin*60;}
+          else{pomoPhase='break';pomoSecondsLeft=pomoBreakMin*60;}
+        } else {
+          pomoPhase='work';pomoSecondsLeft=pomoWorkMin*60;
+        }
+      }
+      renderPomo();
+    },1000);
+  }
+}
+function resetPomo() {
+  clearInterval(pomoInterval);pomoRunning=false;pomoCyclesDone=0;pomoPhase='work';
+  pomoSecondsLeft=pomoWorkMin*60;
+  document.getElementById('pomo-start-btn').textContent='Start';
+  renderPomo();
+}
+function stopPomoAndGoHome() { clearInterval(pomoInterval);pomoRunning=false;showScreen('home'); }
+
+// ═══════════════════════════════════════
+// TASK SORTER
+// ═══════════════════════════════════════
+let tasks={unsorted:[],do:[],plan:[],delegate:[],drop:[]};
+let dragTaskId=null;
+
+function addTask() {
+  const inp=document.getElementById('task-input');
+  const val=inp.value.trim();
+  if(!val)return;
+  tasks.unsorted.push({id:Date.now(),text:val});
+  inp.value='';
+  renderTasks();
+}
+function removeTask(id,bucket) {
+  tasks[bucket]=tasks[bucket].filter(t=>t.id!==id);
+  renderTasks();
+}
+function renderTasks() {
+  renderBucket('unsorted-tasks','unsorted');
+  ['do','plan','delegate','drop'].forEach(b=>renderBucket('q-'+b,b,true));
+}
+function renderBucket(elId,bucket,clearFirst=false) {
+  const container=document.getElementById(elId);
+  const chips=container.querySelectorAll('.task-chip-drag');
+  chips.forEach(c=>c.remove());
+  tasks[bucket].forEach(t=>{
+    const el=document.createElement('div');
+    el.className='task-chip-drag';
+    el.draggable=true;
+    el.innerHTML=`<span>${t.text}</span><span class="task-del" onclick="removeTask(${t.id},'${bucket}')">✕</span>`;
+    el.addEventListener('dragstart',()=>dragTaskId={id:t.id,from:bucket});
+    container.appendChild(el);
+  });
+}
+function dragOver(e,el){e.preventDefault();el.classList.add('drag-over');}
+function drop(e,bucket){
+  e.preventDefault();
+  document.querySelectorAll('.quadrant').forEach(q=>q.classList.remove('drag-over'));
+  if(!dragTaskId)return;
+  const task=tasks[dragTaskId.from].find(t=>t.id===dragTaskId.id);
+  if(!task)return;
+  tasks[dragTaskId.from]=tasks[dragTaskId.from].filter(t=>t.id!==dragTaskId.id);
+  tasks[bucket].push(task);
+  if(dragTaskId.from==='unsorted'){
+    state.tasksSorted++;
+    addXP(5);
+    if(state.tasksSorted>=10) unlockAchievement('task10');
+    if(!state.completedIds.includes('Eisenhower Matrix')) state.completedIds.push('Eisenhower Matrix');
+    saveState();
+  }
+  renderTasks();
+  dragTaskId=null;
+}
+
+// ═══════════════════════════════════════
+// MEMORY PALACE
+// ═══════════════════════════════════════
+const ROOMS=[
+  {emoji:'🛋',name:'Living Room'},{emoji:'🛏',name:'Bedroom'},{emoji:'🍳',name:'Kitchen'},
+  {emoji:'🚿',name:'Bathroom'},{emoji:'🌳',name:'Garden'},{emoji:'🚪',name:'Hallway'},
+  {emoji:'📚',name:'Study'},{emoji:'🎮',name:'Games Room'},{emoji:'🚗',name:'Garage'},
+];
+let palaceItems={};
+let palacePhase='place'; // 'place' or 'recall'
+
+function initPalace() {
+  palacePhase='place';
+  document.getElementById('palace-recall-area').style.display='none';
+  const testBtn=document.getElementById('palace-test-btn');
+  testBtn.style.display='none';
+  renderPalace();
+}
+function renderPalace() {
+  const grid=document.getElementById('palace-grid');
+  grid.innerHTML='';
+  ROOMS.forEach((r,i)=>{
+    const div=document.createElement('div');
+    const item=palaceItems[i];
+    div.className='palace-room'+(item?' has-item':'');
+    div.innerHTML=`<div class="room-emoji">${r.emoji}</div><div class="room-name">${r.name}</div>${item?`<div class="room-item">${item}</div>`:''}`;
+    div.onclick=()=>promptRoom(i,r);
+    grid.appendChild(div);
+  });
+  const hasItems=Object.keys(palaceItems).length>0;
+  document.getElementById('palace-test-btn').style.display=hasItems?'block':'none';
+}
+function promptRoom(i,r) {
+  if(palacePhase!=='place')return;
+  const item=prompt(`What do you want to remember in the ${r.name}?`,palaceItems[i]||'');
+  if(item!==null){
+    if(item.trim()) palaceItems[i]=item.trim();
+    else delete palaceItems[i];
+    renderPalace();
+  }
+}
+function startRecall() {
+  palacePhase='recall';
+  document.getElementById('palace-recall-area').style.display='block';
+  document.getElementById('recall-result').textContent='';
+  document.getElementById('palace-test-btn').style.display='none';
+  const qs=document.getElementById('recall-questions');
+  qs.innerHTML='';
+  Object.keys(palaceItems).forEach(i=>{
+    const r=ROOMS[i];
+    const div=document.createElement('div');
+    div.style.marginBottom='8px';
+    div.innerHTML=`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:3px">${r.emoji} ${r.name}:</div>
+      <input class="recall-input" id="recall-${i}" placeholder="What did you place here?">`;
+    qs.appendChild(div);
+  });
+}
+function checkRecall() {
+  let correct=0,total=Object.keys(palaceItems).length;
+  Object.keys(palaceItems).forEach(i=>{
+    const inp=document.getElementById('recall-'+i);
+    if(!inp)return;
+    const guess=inp.value.trim().toLowerCase();
+    const ans=palaceItems[i].toLowerCase();
+    if(guess&&(ans.includes(guess)||guess.includes(ans)||guess===ans)){
+      correct++;inp.style.borderColor='var(--accent3)';
+    } else {inp.style.borderColor='var(--accent1)';}
+  });
+  const res=document.getElementById('recall-result');
+  res.textContent=`${correct}/${total} correct!`;
+  res.style.color=correct===total?'var(--accent3)':'var(--accent2)';
+  if(correct>0){
+    state.palaceRecalls+=correct;
+    addXP(correct*20);
+    if(state.palaceRecalls>=3) unlockAchievement('palace3');
+    if(!state.completedIds.includes('Memory Palace')) state.completedIds.push('Memory Palace');
+    saveState();
+  }
+  document.getElementById('palace-test-btn').style.display='block';
+  document.getElementById('palace-test-btn').textContent='Place new items';
+  document.getElementById('palace-test-btn').onclick=()=>{palaceItems={};initPalace();};
+}
+
+// ═══════════════════════════════════════
+// PROGRESS SCREEN
+// ═══════════════════════════════════════
+const SKILL_DEFS=[
+  {key:'focus',label:'Focus & Attention',icon:'🔍',color:'#74b9ff'},
+  {key:'creative',label:'Creativity',icon:'🎨',color:'#fd79a8'},
+  {key:'problem',label:'Problem Solving',icon:'🧩',color:'#06d6a0'},
+  {key:'cognitive',label:'Cognitive',icon:'🧠',color:'#ffd166'},
+  {key:'social',label:'Social & Emotional',icon:'🤝',color:'#ff6b6b'},
+  {key:'time',label:'Time Management',icon:'⏰',color:'#a29bfe'},
+];
+
+function renderProgress() {
+  updatePlayerBar();
+  // Skill bars
+  const sec=document.getElementById('skill-progress-section');
+  sec.innerHTML='';
+  SKILL_DEFS.forEach(sd=>{
+    const total=TECHNIQUES.filter(t=>t.skills.includes(sd.key)).length;
+    const done=state.completedIds.filter(tid=>{
+      const t=TECHNIQUES.find(x=>x.title===tid);
+      return t&&t.skills.includes(sd.key);
+    }).length;
+    const pct=total>0?Math.round(done/total*100):0;
+    const row=document.createElement('div');
+    row.className='skill-row';
+    row.innerHTML=`<span class="skill-icon">${sd.icon}</span>
+      <span class="skill-name">${sd.label}</span>
+      <div class="skill-bar-wrap"><div class="skill-bar-fill" style="width:${pct}%;background:${sd.color}"></div></div>
+      <span class="skill-pct" style="color:${sd.color}">${pct}%</span>`;
+    sec.appendChild(row);
+  });
+  // Achievements
+  const grid=document.getElementById('achievement-grid');
+  grid.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const unlocked=state.unlockedAchievements.includes(a.id);
+    const div=document.createElement('div');
+    div.className='achievement'+(unlocked?' unlocked':'');
+    div.innerHTML=`<div class="ach-icon">${a.icon}</div><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div>`;
+    grid.appendChild(div);
+  });
+}
+function confirmReset() {
+  if(confirm('Reset all your progress? This cannot be undone.')) {
+    state={name:state.name,avatar:state.avatar,ageGroup:state.ageGroup,xp:0,completedIds:[],unlockedAchievements:[],stroopGamesPlayed:0,pomodoroCycles:0,tasksSorted:0,palaceRecalls:0,breathingSessions:0,maxStroopStreak:0};
+    saveState(); renderProgress(); updatePlayerBar();
+  }
+}
+
+// ═══════════════════════════════════════
+// RESULT OVERLAY
+// ═══════════════════════════════════════
+let _playAgainFn=null;
+function showResult(emoji,title,sub,xp,playAgainFn) {
+  _playAgainFn=playAgainFn;
+  document.getElementById('res-emoji').textContent=emoji;
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-sub').textContent=sub;
+  document.getElementById('res-xp').textContent=`+${xp} XP earned!`;
+  document.getElementById('result-overlay').classList.add('show');
+}
+function closeResult() { document.getElementById('result-overlay').classList.remove('show'); showScreen('home'); }
+function playAgain() { document.getElementById('result-overlay').classList.remove('show'); if(_playAgainFn) _playAgainFn(); }
+
+// ═══════════════════════════════════════
+// BREATHING & MINDFULNESS
+// ═══════════════════════════════════════
+let breathMode = 'humming';
+
+function switchBreathMode(mode) {
+  breathMode = mode;
+  document.querySelectorAll('.breath-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('bt-' + mode).classList.add('active');
+  document.querySelectorAll('.breath-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('breath-' + mode).style.display = 'block';
+}
+function stopBreathAndGoHome() {
+  stopHumming(); stopAlternate(); stopAlpha();
+  showScreen('home');
+}
+
+function completeBreathSession() {
+  state.breathingSessions++;
+  addXP(10);
+  if (!state.completedIds.includes('Mindfulness & Breathing')) state.completedIds.push('Mindfulness & Breathing');
+  checkAchievements(); saveState();
+}
+
+// ── HUMMING BEE ──
+let humInterval = null, humPhase = 'idle', humTimer = 0, humCycles = 0;
+const HUM_INHALE = 4, HUM_EXHALE = 6, HUM_TOTAL = 7;
+let humAudioCtx = null, humOsc = null, humGain = null;
+
+function startHummingSound() {
+  try {
+    if (!humAudioCtx) humAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    humOsc = humAudioCtx.createOscillator();
+    humGain = humAudioCtx.createGain();
+    humOsc.type = 'sine';
+    humOsc.frequency.value = 250;
+    humGain.gain.value = 0.15;
+    humOsc.connect(humGain); humGain.connect(humAudioCtx.destination);
+    humOsc.start();
+    humGain.gain.setValueAtTime(0, humAudioCtx.currentTime);
+  } catch(e){}
+}
+function setHumVolume(v) {
+  try { if (humGain && humAudioCtx) humGain.gain.setTargetAtTime(v, humAudioCtx.currentTime, 0.1); } catch(e){}
+}
+function stopHummingSound() {
+  try { if (humOsc) { humOsc.stop(); humOsc = null; } humGain = null; } catch(e){}
+}
+
+function startHumming() {
+  stopHumming();
+  humCycles = 0; humPhase = 'inhale'; humTimer = HUM_INHALE;
+  startHummingSound();
+  updateHumVisual();
+  document.getElementById('hum-start-btn').textContent = 'Running...';
+  document.getElementById('hum-start-btn').disabled = true;
+  humInterval = setInterval(() => {
+    humTimer--;
+    if (humTimer <= 0) {
+      if (humPhase === 'inhale') {
+        humPhase = 'exhale'; humTimer = HUM_EXHALE;
+        setHumVolume(0.18);
+      } else {
+        humCycles++;
+        setHumVolume(0);
+        if (humCycles >= HUM_TOTAL) { endHumming(); return; }
+        humPhase = 'inhale'; humTimer = HUM_INHALE;
+      }
+    }
+    updateHumVisual();
+  }, 1000);
+}
+function updateHumVisual() {
+  const circle = document.getElementById('hum-circle');
+  const phase = document.getElementById('hum-phase');
+  const timer = document.getElementById('hum-timer');
+  const indicator = document.getElementById('hum-indicator');
+  const cycles = document.getElementById('hum-cycles');
+  cycles.textContent = `Cycles: ${humCycles} / ${HUM_TOTAL}`;
+  timer.textContent = humTimer;
+  if (humPhase === 'inhale') {
+    phase.textContent = 'Inhale';
+    phase.style.color = 'var(--accent6)';
+    circle.style.width = '180px'; circle.style.height = '180px';
+    circle.style.background = 'rgba(116,185,255,0.3)';
+    circle.style.animation = '';
+    indicator.textContent = '👃 Breathe in slowly through your nose';
+    indicator.style.color = 'var(--accent6)';
+  } else {
+    phase.textContent = 'Hum';
+    phase.style.color = 'var(--accent4)';
+    circle.style.width = '100px'; circle.style.height = '100px';
+    circle.style.background = 'rgba(162,155,254,0.4)';
+    circle.style.animation = 'breathPulse 1s infinite';
+    indicator.textContent = '🐝 Hmmmmm... feel the vibration';
+    indicator.style.color = 'var(--accent4)';
+  }
+}
+function endHumming() {
+  clearInterval(humInterval); humInterval = null;
+  stopHummingSound();
+  completeBreathSession();
+  document.getElementById('hum-phase').textContent = 'Done!';
+  document.getElementById('hum-phase').style.color = 'var(--accent3)';
+  document.getElementById('hum-timer').textContent = '✓';
+  document.getElementById('hum-indicator').textContent = '🌟 Great job! You completed all 7 cycles.';
+  document.getElementById('hum-indicator').style.color = 'var(--accent3)';
+  document.getElementById('hum-circle').style.width = '140px';
+  document.getElementById('hum-circle').style.height = '140px';
+  document.getElementById('hum-circle').style.background = 'rgba(6,214,160,0.3)';
+  document.getElementById('hum-circle').style.animation = '';
+  document.getElementById('hum-start-btn').textContent = 'Start';
+  document.getElementById('hum-start-btn').disabled = false;
+}
+function stopHumming() {
+  clearInterval(humInterval); humInterval = null;
+  stopHummingSound();
+  humPhase = 'idle'; humTimer = 0; humCycles = 0;
+  document.getElementById('hum-phase').textContent = 'Ready';
+  document.getElementById('hum-phase').style.color = 'var(--accent4)';
+  document.getElementById('hum-timer').textContent = '0';
+  document.getElementById('hum-cycles').textContent = 'Cycles: 0 / 7';
+  document.getElementById('hum-circle').style.width = '80px';
+  document.getElementById('hum-circle').style.height = '80px';
+  document.getElementById('hum-circle').style.background = 'rgba(162,155,254,0.25)';
+  document.getElementById('hum-circle').style.animation = '';
+  document.getElementById('hum-indicator').textContent = '';
+  document.getElementById('hum-start-btn').textContent = 'Start';
+  document.getElementById('hum-start-btn').disabled = false;
+}
+
+// ── ALTERNATE NOSTRIL ──
+let altInterval = null, altPhase = 'idle', altTimer = 0, altCycles = 0;
+let altSide = 'left';
+const ALT_IN = 4, ALT_HOLD = 2, ALT_OUT = 4, ALT_TOTAL = 5;
+
+function startAlternate() {
+  stopAlternate();
+  altCycles = 0; altSide = 'left'; altPhase = 'inhale'; altTimer = ALT_IN;
+  document.getElementById('alt-start-btn').textContent = 'Running...';
+  document.getElementById('alt-start-btn').disabled = true;
+  updateAltVisual();
+  altInterval = setInterval(() => {
+    altTimer--;
+    if (altTimer <= 0) {
+      if (altPhase === 'inhale') {
+        altPhase = 'hold'; altTimer = ALT_HOLD;
+      } else if (altPhase === 'hold') {
+        altPhase = 'exhale'; altTimer = ALT_OUT;
+        altSide = altSide === 'left' ? 'right' : 'left';
+      } else {
+        altCycles++;
+        if (altCycles >= ALT_TOTAL) { endAlternate(); return; }
+        altPhase = 'inhale'; altTimer = ALT_IN;
+      }
+    }
+    updateAltVisual();
+  }, 1000);
+}
+function updateAltVisual() {
+  const circle = document.getElementById('alt-circle');
+  const phase = document.getElementById('alt-phase');
+  const timer = document.getElementById('alt-timer');
+  const guide = document.getElementById('alt-hand-guide');
+  const cycles = document.getElementById('alt-cycles');
+  const leftN = document.getElementById('nostril-left');
+  const rightN = document.getElementById('nostril-right');
+  cycles.textContent = `Cycles: ${altCycles} / ${ALT_TOTAL}`;
+  timer.textContent = altTimer;
+
+  leftN.className = 'nostril-side';
+  rightN.className = 'nostril-side';
+
+  if (altPhase === 'inhale') {
+    phase.textContent = 'Inhale';
+    phase.style.color = 'var(--accent6)';
+    circle.style.width = '180px'; circle.style.height = '180px';
+    circle.style.background = 'rgba(116,185,255,0.3)';
+    if (altSide === 'left') {
+      leftN.classList.add('active-nostril');
+      rightN.classList.add('closed-nostril');
+      guide.innerHTML = '👆 Close RIGHT nostril with thumb. <strong>Inhale through LEFT.</strong>';
+    } else {
+      rightN.classList.add('active-nostril');
+      leftN.classList.add('closed-nostril');
+      guide.innerHTML = '👆 Close LEFT nostril with ring finger. <strong>Inhale through RIGHT.</strong>';
+    }
+  } else if (altPhase === 'hold') {
+    phase.textContent = 'Hold';
+    phase.style.color = 'var(--accent2)';
+    circle.style.width = '150px'; circle.style.height = '150px';
+    circle.style.background = 'rgba(255,209,102,0.3)';
+    leftN.classList.add('closed-nostril');
+    rightN.classList.add('closed-nostril');
+    guide.innerHTML = '✋ <strong>Close both nostrils and hold your breath gently.</strong>';
+  } else {
+    phase.textContent = 'Exhale';
+    phase.style.color = 'var(--accent4)';
+    circle.style.width = '90px'; circle.style.height = '90px';
+    circle.style.background = 'rgba(162,155,254,0.3)';
+    if (altSide === 'left') {
+      leftN.classList.add('active-nostril');
+      rightN.classList.add('closed-nostril');
+      guide.innerHTML = '👆 Keep RIGHT closed. <strong>Exhale slowly through LEFT.</strong>';
+    } else {
+      rightN.classList.add('active-nostril');
+      leftN.classList.add('closed-nostril');
+      guide.innerHTML = '👆 Keep LEFT closed. <strong>Exhale slowly through RIGHT.</strong>';
+    }
+  }
+}
+function endAlternate() {
+  clearInterval(altInterval); altInterval = null;
+  completeBreathSession();
+  document.getElementById('alt-phase').textContent = 'Done!';
+  document.getElementById('alt-phase').style.color = 'var(--accent3)';
+  document.getElementById('alt-timer').textContent = '✓';
+  document.getElementById('alt-hand-guide').innerHTML = '🌟 Excellent! You completed 5 full cycles.';
+  document.getElementById('alt-circle').style.width = '140px';
+  document.getElementById('alt-circle').style.height = '140px';
+  document.getElementById('alt-circle').style.background = 'rgba(6,214,160,0.3)';
+  document.getElementById('nostril-left').className = 'nostril-side active-nostril';
+  document.getElementById('nostril-right').className = 'nostril-side active-nostril';
+  document.getElementById('alt-start-btn').textContent = 'Start';
+  document.getElementById('alt-start-btn').disabled = false;
+}
+function stopAlternate() {
+  clearInterval(altInterval); altInterval = null;
+  altPhase = 'idle'; altTimer = 0; altCycles = 0; altSide = 'left';
+  document.getElementById('alt-phase').textContent = 'Ready';
+  document.getElementById('alt-phase').style.color = 'var(--accent6)';
+  document.getElementById('alt-timer').textContent = '0';
+  document.getElementById('alt-cycles').textContent = 'Cycles: 0 / 5';
+  document.getElementById('alt-circle').style.width = '80px';
+  document.getElementById('alt-circle').style.height = '80px';
+  document.getElementById('alt-circle').style.background = 'rgba(116,185,255,0.25)';
+  document.getElementById('alt-hand-guide').innerHTML = '';
+  document.getElementById('nostril-left').className = 'nostril-side';
+  document.getElementById('nostril-right').className = 'nostril-side';
+  document.getElementById('alt-start-btn').textContent = 'Start';
+  document.getElementById('alt-start-btn').disabled = false;
+}
+
+// ── ALPHA WAVE BINAURAL BEATS ──
+let alphaCtx = null, alphaOscL = null, alphaOscR = null, alphaGainL = null, alphaGainR = null;
+let alphaNoiseNode = null, alphaNoiseGain = null;
+let alphaPlaying = false, alphaInterval = null, alphaSecondsLeft = 300;
+let alphaAnimFrame = null;
+
+function updateAlphaLabel() {
+  document.getElementById('alpha-freq-val').textContent = document.getElementById('alpha-freq').value;
+  document.getElementById('alpha-beat-val').textContent = document.getElementById('alpha-beat').value;
+  document.getElementById('alpha-dur-val').textContent = document.getElementById('alpha-dur').value;
+  if (!alphaPlaying) {
+    alphaSecondsLeft = parseInt(document.getElementById('alpha-dur').value) * 60;
+    renderAlphaTimer();
+  }
+  if (alphaPlaying && alphaOscL && alphaOscR) {
+    const base = parseFloat(document.getElementById('alpha-freq').value);
+    const beat = parseFloat(document.getElementById('alpha-beat').value);
+    alphaOscL.frequency.setTargetAtTime(base, alphaCtx.currentTime, 0.05);
+    alphaOscR.frequency.setTargetAtTime(base + beat, alphaCtx.currentTime, 0.05);
+  }
+}
+function updateAlphaVol() {
+  const v = parseInt(document.getElementById('alpha-vol').value) / 100;
+  document.getElementById('alpha-vol-val').textContent = Math.round(v * 100) + '%';
+  if (alphaGainL) alphaGainL.gain.setTargetAtTime(v * 0.25, alphaCtx.currentTime, 0.1);
+  if (alphaGainR) alphaGainR.gain.setTargetAtTime(v * 0.25, alphaCtx.currentTime, 0.1);
+}
+function updateRainVol() {
+  const v = parseInt(document.getElementById('alpha-rain-vol').value) / 100;
+  document.getElementById('alpha-rain-val').textContent = Math.round(v * 100) + '%';
+  if (alphaNoiseGain) alphaNoiseGain.gain.setTargetAtTime(v * 0.15, alphaCtx.currentTime, 0.1);
+}
+function renderAlphaTimer() {
+  const m = Math.floor(alphaSecondsLeft / 60);
+  const s = alphaSecondsLeft % 60;
+  document.getElementById('alpha-timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function createBrownNoise(ctx) {
+  const bufferSize = 2 * ctx.sampleRate;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  let lastOut = 0;
+  for (let i = 0; i < bufferSize; i++) {
+    const white = Math.random() * 2 - 1;
+    data[i] = (lastOut + 0.02 * white) / 1.02;
+    lastOut = data[i];
+    data[i] *= 3.5;
+  }
+  const node = ctx.createBufferSource();
+  node.buffer = buffer;
+  node.loop = true;
+  return node;
+}
+
+function toggleAlpha() {
+  if (alphaPlaying) {
+    stopAlpha(); return;
+  }
+  try {
+    alphaCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch(e) { return; }
+
+  const base = parseFloat(document.getElementById('alpha-freq').value);
+  const beat = parseFloat(document.getElementById('alpha-beat').value);
+  const vol = parseInt(document.getElementById('alpha-vol').value) / 100;
+  const rainVol = parseInt(document.getElementById('alpha-rain-vol').value) / 100;
+  alphaSecondsLeft = parseInt(document.getElementById('alpha-dur').value) * 60;
+
+  const merger = alphaCtx.createChannelMerger(2);
+
+  alphaOscL = alphaCtx.createOscillator();
+  alphaOscL.type = 'sine';
+  alphaOscL.frequency.value = base;
+  alphaGainL = alphaCtx.createGain();
+  alphaGainL.gain.value = vol * 0.25;
+  alphaOscL.connect(alphaGainL);
+  alphaGainL.connect(merger, 0, 0);
+
+  alphaOscR = alphaCtx.createOscillator();
+  alphaOscR.type = 'sine';
+  alphaOscR.frequency.value = base + beat;
+  alphaGainR = alphaCtx.createGain();
+  alphaGainR.gain.value = vol * 0.25;
+  alphaOscR.connect(alphaGainR);
+  alphaGainR.connect(merger, 0, 1);
+
+  alphaNoiseNode = createBrownNoise(alphaCtx);
+  alphaNoiseGain = alphaCtx.createGain();
+  alphaNoiseGain.gain.value = rainVol * 0.15;
+  alphaNoiseNode.connect(alphaNoiseGain);
+  alphaNoiseGain.connect(merger, 0, 0);
+  alphaNoiseGain.connect(merger, 0, 1);
+
+  merger.connect(alphaCtx.destination);
+  alphaOscL.start();
+  alphaOscR.start();
+  alphaNoiseNode.start();
+
+  alphaPlaying = true;
+  document.getElementById('alpha-start-btn').textContent = 'Pause';
+
+  alphaInterval = setInterval(() => {
+    alphaSecondsLeft--;
+    renderAlphaTimer();
+    if (alphaSecondsLeft <= 0) {
+      stopAlpha();
+      completeBreathSession();
+      unlockAchievement('alpha1');
+      saveState();
+    }
+  }, 1000);
+
+  drawAlphaWave();
+}
+
+function stopAlpha() {
+  alphaPlaying = false;
+  clearInterval(alphaInterval); alphaInterval = null;
+  cancelAnimationFrame(alphaAnimFrame);
+  try {
+    if (alphaOscL) alphaOscL.stop();
+    if (alphaOscR) alphaOscR.stop();
+    if (alphaNoiseNode) alphaNoiseNode.stop();
+    if (alphaCtx) alphaCtx.close();
+  } catch(e){}
+  alphaOscL = null; alphaOscR = null; alphaGainL = null; alphaGainR = null;
+  alphaNoiseNode = null; alphaNoiseGain = null; alphaCtx = null;
+  document.getElementById('alpha-start-btn').textContent = 'Play';
+  const canvas = document.getElementById('alpha-canvas');
+  const ctx2d = canvas.getContext('2d');
+  ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawAlphaWave() {
+  if (!alphaPlaying) return;
+  const canvas = document.getElementById('alpha-canvas');
+  const ctx2d = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const beat = parseFloat(document.getElementById('alpha-beat').value);
+  const t = Date.now() / 1000;
+
+  ctx2d.clearRect(0, 0, W, H);
+
+  ctx2d.strokeStyle = 'rgba(162,155,254,0.5)';
+  ctx2d.lineWidth = 2;
+  ctx2d.beginPath();
+  for (let x = 0; x < W; x++) {
+    const y = H/2 + Math.sin((x / W) * Math.PI * 8 + t * 3) * 18 * Math.sin(t * beat * 0.6);
+    if (x === 0) ctx2d.moveTo(x, y); else ctx2d.lineTo(x, y);
+  }
+  ctx2d.stroke();
+
+  ctx2d.strokeStyle = 'rgba(116,185,255,0.3)';
+  ctx2d.lineWidth = 1.5;
+  ctx2d.beginPath();
+  for (let x = 0; x < W; x++) {
+    const y = H/2 + Math.sin((x / W) * Math.PI * 6 + t * 2 + 1) * 14 * Math.cos(t * beat * 0.4);
+    if (x === 0) ctx2d.moveTo(x, y); else ctx2d.lineTo(x, y);
+  }
+  ctx2d.stroke();
+
+  ctx2d.strokeStyle = 'rgba(6,214,160,0.2)';
+  ctx2d.lineWidth = 1;
+  ctx2d.beginPath();
+  for (let x = 0; x < W; x++) {
+    const y = H/2 + Math.sin((x / W) * Math.PI * 4 + t * 1.5 + 2) * 10 * Math.sin(t * beat * 0.3 + 1);
+    if (x === 0) ctx2d.moveTo(x, y); else ctx2d.lineTo(x, y);
+  }
+  ctx2d.stroke();
+
+  alphaAnimFrame = requestAnimationFrame(drawAlphaWave);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+(function init(){
+  const saved = loadState();
+  if (saved && state.name) {
+    showScreen('home');
+    // restore age filter chip
+    if(state.ageGroup){
+      document.querySelectorAll('#age-chips .chip').forEach(c=>{
+        if(c.dataset.age===state.ageGroup){c.click();}
+      });
+    }
+  } else {
+    showScreen('onboarding');
+  }
+  renderPomo();
+})();
+</script>
+</body>
+</html>
